@@ -4,7 +4,7 @@ import IconDescBtn from '../components/IconDescBtn'
 import StatsCard from '../components/StatsCard'
 import GraphCard from '../components/GraphCard'
 
-function MainContent() {
+function DashboardContent() {
   return (
     <div className='
     flex
@@ -61,4 +61,4 @@ function MainContent() {
   )
 }
 
-export default MainContent
+export default DashboardContent

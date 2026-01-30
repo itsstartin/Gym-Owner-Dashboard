@@ -1,8 +1,9 @@
 import './App.css'
-import MainContent from './combinedComponents/MainContent'
+import DashboardContent from './combinedComponents/DashboardContent'
 import IconDescBtn from './components/IconDescBtn'
 import StatsCard from './components/StatsCard'
 import WelcomeHeader from './components/WelcomeHeader'
+import MainPage from './pages/MainPage'
 
 function App() {
 
@@ -16,7 +17,7 @@ function App() {
     //   <IconDescBtn/>
     //   <StatsCard/>
     // </div>
-    <MainContent/>
+    <MainPage/>
   )
 }
 

@@ -13,8 +13,9 @@ function SideBar() {
     justify-between
     items-center
     w-44
+    p-3.5
     h-screen
-    
+    bg-gray-800
     '>
         <GymIcon/>
         <div className='
@@ -22,7 +23,7 @@ function SideBar() {
         flex-col
         justify-start
         h-full
-        
+        gap-2
         
         '>
             <IconDescBtn/>
@@ -36,6 +37,7 @@ function SideBar() {
         flex-col
         justify-center
         items-center
+        gap-2
         
         '>
             <IconDescBtn/>

@@ -1,6 +1,7 @@
 import React from 'react'
 import WelcomeHeader from '../components/WelcomeHeader'
 import MemberCard from '../components/MemberCard'
+import MemberSearchBar from '../components/MemberSearchBar'
 
 function MemberMenuContent() {
   return (
@@ -10,6 +11,7 @@ function MemberMenuContent() {
     w-full
     '>
         <WelcomeHeader/>
+        <MemberSearchBar/>
         <div className='
         grid
         grid-cols-1

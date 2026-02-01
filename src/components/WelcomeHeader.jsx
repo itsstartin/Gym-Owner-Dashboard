@@ -8,8 +8,7 @@ function WelcomeHeader() {
     items-start 
     justify-between
     text-white
-    bg-black
-    gap-2
+    gap-0.5
     '>
         <button>
             <img className='
@@ -17,8 +16,8 @@ function WelcomeHeader() {
             h-6
             '></img>
         </button>
-        <h1>Welcome back, Admin</h1>
-        <p>Here is what is happening at gym today</p>
+        <h1 className='text-3xl font-extrabold'>Welcome back, Admin</h1>
+        <p className='text-gray-400 text-[15px]'>Here is what is happening at gym today</p>
     </div>
   )
 }

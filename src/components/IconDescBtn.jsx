@@ -5,12 +5,14 @@ function IconDescBtn() {
     <button
     className='
     flex
-    h-8
+    h-7.5
     w-36
     rounded-[8px]
     justify-center
     items-center
     bg-green-500
+    text-[14px]
+    font-bold
     text-white
     gap-6
     '>

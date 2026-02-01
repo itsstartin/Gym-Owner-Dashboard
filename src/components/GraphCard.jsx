@@ -5,7 +5,7 @@ function GraphCard() {
     <div className='
     flex
     justify-center
-    bg-black
+    bg-gray-800
     rounded-[8px]
     text-white
     '>

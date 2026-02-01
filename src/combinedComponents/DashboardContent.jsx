@@ -10,11 +10,14 @@ function DashboardContent() {
     flex
     flex-col
     w-full
-    gap-2
+    gap-4
+    p-3
+    sm:p-6
     '>
         <div className='
         grid
         grid-cols-2
+
         '>
             <WelcomeHeader/>
             <div className='
@@ -40,7 +43,7 @@ function DashboardContent() {
         grid-cols-1
         sm:grid-cols-2
         lg:grid-cols-4
-        gap-2
+        gap-4
         '>
             <StatsCard/>
             <StatsCard/>
@@ -51,7 +54,7 @@ function DashboardContent() {
         grid
         grid-cols-1
         md:grid-cols-2
-        gap-2
+        gap-4
         '>
             <GraphCard/>
             <GraphCard/>

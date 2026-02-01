@@ -8,15 +8,16 @@ function StatsCard() {
     flex-col
     rounded-[8px]
     gap-6
-    bg-black
+    bg-gray-800
     text-white
+    p-5
     '>
         <div
         className='
         flex
         justify-between
         '>
-            <h1>Active Members</h1>
+            <h1 className='text-[14px] font-bold'>Active Members</h1>
             <img
             className='
             w-6
@@ -31,8 +32,8 @@ function StatsCard() {
         justify-between
         align-start
         '>
-            <h1>1247</h1>
-            <p>12% from last month</p>
+            <h1 className='text-3xl font-extrabold'>1247</h1>
+            <p className='text-[12px]'>+12% from last month</p>
 
         </div>
     </div>

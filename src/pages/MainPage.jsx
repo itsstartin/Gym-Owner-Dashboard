@@ -7,9 +7,12 @@ function MainPage() {
   return (
     <div className='
     flex
+    font-sans-serif
+    bg-gray-950
+    text-white
     '>
         <SideBar/>
-        <MemberMenuContent/>
+        <DashboardContent/>
     </div>
   )
 }

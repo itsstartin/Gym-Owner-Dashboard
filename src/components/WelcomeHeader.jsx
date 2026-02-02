@@ -1,6 +1,9 @@
 import React from 'react'
+import { useDispatch } from 'react-redux'
+import { sidebarOn } from '../features/sidebarSlice'
 
 function WelcomeHeader() {
+  const dispatch = useDispatch()
   return (
     <div className='
     flex
@@ -10,7 +13,11 @@ function WelcomeHeader() {
     text-white
     gap-0.5
     '>
-        <button>
+        <button className='md:hidden' onClick={
+          ()=>{
+            dispatch(sidebarOn())
+          }
+        }>
             <img className='
             w-6
             h-6

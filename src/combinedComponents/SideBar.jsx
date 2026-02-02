@@ -1,15 +1,18 @@
 import React from 'react'
 import GymIcon from '../components/GymIcon'
 import IconDescBtn from '../components/IconDescBtn'
+import { useSelector } from 'react-redux'
 
 function SideBar() {
+  const sidebarState = useSelector((state)=>state.sidebarState.value)
+
   return (
-    <div className='
+    <div className={`
     flex
     flex-col
     self-start
     fixed
-    -translate-x-full
+    ${sidebarState ? 'translate-x-0' :'-translate-x-full'}
     md:sticky md:translate-x-0
     top-0
     justify-between
@@ -18,7 +21,7 @@ function SideBar() {
     p-3.5
     h-screen
     bg-gray-800
-    '>
+    `}>
         <GymIcon/>
         <div className='
         flex

@@ -8,7 +8,9 @@ function SideBar() {
     flex
     flex-col
     self-start
-    sticky
+    fixed
+    -translate-x-full
+    md:sticky md:translate-x-0
     top-0
     justify-between
     items-center

@@ -3,6 +3,7 @@ import WelcomeHeader from '../components/WelcomeHeader'
 import IconDescBtn from '../components/IconDescBtn'
 import StatsCard from '../components/StatsCard'
 import GraphCard from '../components/GraphCard'
+import { ChartLine, DollarSign, FileText, Plus, UserCheck, Users } from 'lucide-react'
 
 function DashboardContent() {
   return (
@@ -32,8 +33,8 @@ function DashboardContent() {
                 sm:grid-cols-2
                 gap-2
                 '>
-                <IconDescBtn/>
-                <IconDescBtn/>
+                <IconDescBtn icon={Plus} label='Add Member'/>
+                <IconDescBtn icon={FileText} label='View Reports'/>
                 </div>
             </div>
 
@@ -45,10 +46,10 @@ function DashboardContent() {
         lg:grid-cols-4
         gap-4
         '>
-            <StatsCard/>
-            <StatsCard/>
-            <StatsCard/>
-            <StatsCard/>
+            <StatsCard icon={Users} title='Active Members'/>
+            <StatsCard icon={UserCheck} title='Trainers'/>
+            <StatsCard icon={DollarSign} title='Revenue This Month'/>
+            <StatsCard icon={ChartLine} title="Today's Attendance"/>
         </div>
         <div className='
         grid

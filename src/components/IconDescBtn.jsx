@@ -1,6 +1,8 @@
 import React from 'react'
 
-function IconDescBtn() {
+function IconDescBtn(props) {
+  const Icon = props.icon;
+  
   return (
     <button
     className='
@@ -8,21 +10,35 @@ function IconDescBtn() {
     h-7.5
     w-36
     rounded-[8px]
-    justify-center
+    justify-start
     items-center
     bg-green-500
     text-[14px]
     font-bold
     text-white
-    gap-6
+    gap-2
     '>
-        <img
+      {!Icon ? <>
+      <img
         className='
         w-6
         h-6
         '
-        ></img>
+        />
         <p>Button</p>
+        </>
+         :
+         <>
+      <Icon
+        className='
+        w-6
+        h-6
+        m-2
+        '
+        />
+        <p>{props.label}</p>
+        </>}
+        
     </button>
   )
 }

@@ -1,6 +1,7 @@
 import React from 'react'
 
-function StatsCard() {
+function StatsCard(props) {
+  const Icon = props.icon
   return (
     <div
     className='
@@ -12,6 +13,8 @@ function StatsCard() {
     text-white
     p-5
     '>
+        {!Icon ?
+        <>
         <div
         className='
         flex
@@ -36,6 +39,35 @@ function StatsCard() {
             <p className='text-[12px]'>+12% from last month</p>
 
         </div>
+
+        </>
+        :
+        <>
+          <div
+        className='
+        flex
+        justify-between
+        '>
+            <h1 className='text-[14px] font-bold'>{props.title}</h1>
+            <Icon
+            className='
+            w-6
+            h-6
+            '
+            />
+        </div>
+        <div
+        className='
+        flex
+        flex-col
+        justify-between
+        align-start
+        '>
+            <h1 className='text-3xl font-extrabold'>1247</h1>
+            <p className='text-[12px]'>+12% from last month</p>
+
+        </div>
+        </>}
     </div>
   )
 }

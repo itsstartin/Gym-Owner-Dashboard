@@ -2,6 +2,7 @@ import React from 'react'
 import GymIcon from '../components/GymIcon'
 import IconDescBtn from '../components/IconDescBtn'
 import { useSelector } from 'react-redux'
+import { Bell, ChartColumn, CreditCard, LayoutDashboard, LayoutDashboardIcon, LogOut, LucideLayoutDashboard, Settings, Users } from 'lucide-react';
 
 function SideBar() {
   const sidebarState = useSelector((state)=>state.sidebarState.value)
@@ -31,10 +32,10 @@ function SideBar() {
         gap-2
         
         '>
-            <IconDescBtn/>
-            <IconDescBtn/>
-            <IconDescBtn/>
-            <IconDescBtn/>
+            <IconDescBtn icon={LayoutDashboard} label='Dashboard'/>
+            <IconDescBtn icon={Users} label='Members'/>
+            <IconDescBtn icon={CreditCard} label='Payment'/>
+            <IconDescBtn icon={ChartColumn} label='Report'/>
 
         </div>
         <div className='
@@ -45,9 +46,9 @@ function SideBar() {
         gap-2
         
         '>
-            <IconDescBtn/>
-            <IconDescBtn/>
-            <IconDescBtn/>
+            <IconDescBtn icon={Bell} label='Notifications'/>
+            <IconDescBtn icon={Settings} label='Settings'/>
+            <IconDescBtn icon={LogOut} label='Logout'/>
 
         </div>
 

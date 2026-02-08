@@ -1,6 +1,7 @@
 import React from 'react'
 import {useDispatch} from 'react-redux'
 import { sidebarOff } from '../features/sidebarSlice'
+import { Dumbbell } from 'lucide-react'
 
 function GymIcon() {
   const dispatch = useDispatch()
@@ -11,11 +12,11 @@ function GymIcon() {
     items-center
     gap-1
     '>
-        <img className='
+        <Dumbbell className='
         w-8
         h-8
-        '>
-        </img>
+        '/>
+        
         <div className='
         flex
         flex-col

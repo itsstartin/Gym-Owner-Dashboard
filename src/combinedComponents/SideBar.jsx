@@ -19,9 +19,9 @@ function SideBar() {
     md:sticky md:translate-x-0
     top-0
     justify-between
-    items-center
-    w-44
-    p-3.5
+    min-w-55
+    max-w-55
+    p-2
     h-screen
     bg-gray-900
     `}>
@@ -32,6 +32,7 @@ function SideBar() {
         justify-start
         h-full
         gap-2
+        w-full
         
         '>
             <IconDescBtn sb icon={LayoutDashboard} label='Dashboard' onClick={()=>dispatch(dashboardOn())}/>
@@ -46,12 +47,11 @@ function SideBar() {
         justify-center
         items-center
         gap-2
-        
+        w-full
         '>
             <IconDescBtn sb icon={Bell} label='Notifications'/>
             <IconDescBtn sb icon={Settings} label='Settings'/>
             <IconDescBtn sb icon={LogOut} label='Logout'/>
-
         </div>
 
     </div>

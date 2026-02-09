@@ -8,23 +8,31 @@ function GymIcon() {
   return (
     <div className='
     flex
-    justify-center
+    justify-start
     items-center
-    gap-1
+    gap-4
+    w-full
+    p-2
+    pt-3
+    pb-5
     '>
         <Dumbbell className='
         w-8
         h-8
+        p-1
+        bg-green-800
+        rounded-[8px]
         '/>
         
         <div className='
         flex
         flex-col
+        w-full
         justify-center
         items-start
         '>
-            <h1>GymPro Connect</h1>
-            <p>Admin Panel</p>
+            <h1 className='text-sm font-extrabold'>GymPro Connect</h1>
+            <p className='text-xs'>Admin Panel</p>
 
         </div>
         <div className='

@@ -1,23 +1,27 @@
 import React from 'react'
+import { useSelector } from 'react-redux';
 
 function IconDescBtn(props) {
   const Icon = props.icon;
+  const OnClick = props.onClick;
+  const currentPageState = useSelector((state)=>state.currentPageState.value)
   
   return (
     <button
-    className='
+    onClick={OnClick ? OnClick : null}
+    className={`
     flex
     h-7.5
     w-36
     rounded-[8px]
     justify-start
     items-center
-    bg-green-500
+    ${props.sb && props.label!==currentPageState ? '' : 'bg-green-800'}
     text-[14px]
     font-bold
     text-white
     gap-2
-    '>
+    `}>
       {!Icon ? <>
       <img
         className='
@@ -30,13 +34,12 @@ function IconDescBtn(props) {
          :
          <>
       <Icon
+        size={16}
         className='
-        w-6
-        h-6
         m-2
         '
         />
-        <p>{props.label}</p>
+        <p className='text-[13px]'>{props.label}</p>
         </>}
         
     </button>

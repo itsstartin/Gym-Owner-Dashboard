@@ -9,7 +9,7 @@ function StatsCard(props) {
     flex-col
     rounded-[8px]
     gap-6
-    bg-gray-800
+    bg-gray-900
     text-white
     p-5
     '>

@@ -1,11 +1,13 @@
 import React from 'react'
 import GymIcon from '../components/GymIcon'
 import IconDescBtn from '../components/IconDescBtn'
-import { useSelector } from 'react-redux'
-import { Bell, ChartColumn, CreditCard, LayoutDashboard, LayoutDashboardIcon, LogOut, LucideLayoutDashboard, Settings, Users } from 'lucide-react';
+import { useDispatch, useSelector } from 'react-redux'
+import { Bell, ChartColumn, CreditCard, LayoutDashboard,  LogOut,  Settings, Users } from 'lucide-react';
+import { dashboardOn, membersOn } from '../features/currentPageSlice';
 
 function SideBar() {
   const sidebarState = useSelector((state)=>state.sidebarState.value)
+  const dispatch = useDispatch()
 
   return (
     <div className={`
@@ -21,7 +23,7 @@ function SideBar() {
     w-44
     p-3.5
     h-screen
-    bg-gray-800
+    bg-gray-900
     `}>
         <GymIcon/>
         <div className='
@@ -32,10 +34,10 @@ function SideBar() {
         gap-2
         
         '>
-            <IconDescBtn icon={LayoutDashboard} label='Dashboard'/>
-            <IconDescBtn icon={Users} label='Members'/>
-            <IconDescBtn icon={CreditCard} label='Payment'/>
-            <IconDescBtn icon={ChartColumn} label='Report'/>
+            <IconDescBtn sb icon={LayoutDashboard} label='Dashboard' onClick={()=>dispatch(dashboardOn())}/>
+            <IconDescBtn sb icon={Users} label='Members' onClick={()=>dispatch(membersOn())}/>
+            <IconDescBtn sb icon={CreditCard} label='Payment'/>
+            <IconDescBtn sb icon={ChartColumn} label='Report'/>
 
         </div>
         <div className='
@@ -46,9 +48,9 @@ function SideBar() {
         gap-2
         
         '>
-            <IconDescBtn icon={Bell} label='Notifications'/>
-            <IconDescBtn icon={Settings} label='Settings'/>
-            <IconDescBtn icon={LogOut} label='Logout'/>
+            <IconDescBtn sb icon={Bell} label='Notifications'/>
+            <IconDescBtn sb icon={Settings} label='Settings'/>
+            <IconDescBtn sb icon={LogOut} label='Logout'/>
 
         </div>
 

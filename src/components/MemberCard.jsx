@@ -6,7 +6,7 @@ function MemberCard() {
     <div className='
     flex
     flex-col
-    bg-gray-700
+    bg-gray-900
     text-white
     rounded-[8px]
     gap-2

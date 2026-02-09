@@ -33,7 +33,7 @@ function DashboardContent() {
                 sm:grid-cols-2
                 gap-2
                 '>
-                <IconDescBtn icon={Plus} label='Add Member'/>
+                <IconDescBtn icon={Plus} label='Add Member' />
                 <IconDescBtn icon={FileText} label='View Reports'/>
                 </div>
             </div>

@@ -45,7 +45,6 @@ function SideBar() {
         flex
         flex-col
         justify-center
-        items-center
         gap-2
         w-full
         '>

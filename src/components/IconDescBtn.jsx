@@ -12,7 +12,7 @@ function IconDescBtn(props) {
     className={`
     flex
     h-7.5
-    w-full
+    
     p-1.5
     rounded-[8px]
     justify-start

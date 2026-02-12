@@ -1,7 +1,9 @@
 import React from 'react'
 import MemberStatus from './MemberStatus'
 
-function MemberCard() {
+function MemberCard(props) {
+    const memberName = props.name
+
   return (
     <div className='
     flex
@@ -10,6 +12,7 @@ function MemberCard() {
     text-white
     rounded-[8px]
     gap-2
+    p-2
     '>
         <div className='
         flex
@@ -24,8 +27,8 @@ function MemberCard() {
             flex
             flex-col
             w-full
-            '>
-                <h1>John Doe</h1>
+            '>  
+                <h1>{memberName}</h1>
                 <p>johndoe@gmail.com</p>
             </div>
             <button className='
@@ -77,6 +80,7 @@ function MemberCard() {
         items-center
         bg-black
         gap-2
+        rounded-[8px]
         '>
             <img className='
             w-6

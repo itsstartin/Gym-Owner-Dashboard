@@ -3,6 +3,7 @@ import SideBar from '../combinedComponents/SideBar'
 import DashboardContent from '../combinedComponents/DashboardContent'
 import { useSelector } from 'react-redux'
 import MemberMenuContent from '../combinedComponents/MemberMenuContent'
+import AddMemberForm from '../components/AddMemberForm'
 
 function MainPage() {
   const currentPageState = useSelector((state)=>state.currentPageState.value)
@@ -22,6 +23,7 @@ function MainPage() {
           <MemberMenuContent/>
           :''
         }
+        <AddMemberForm/>
     </div>
   )
 }

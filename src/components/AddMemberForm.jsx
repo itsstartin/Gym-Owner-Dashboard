@@ -1,8 +1,11 @@
 import React, { useState } from 'react'
 import IconDescBtn from './IconDescBtn'
 import axios from '../axios'
+import { useDispatch } from 'react-redux'
+import { dashboardOn } from '../features/currentPageSlice'
 
 function AddMemberForm() {
+    const dispatch = useDispatch()
     const [memberForm,setMemberForm]=useState({
         'name':"",
         'email':"",
@@ -96,8 +99,9 @@ function AddMemberForm() {
         flex
         justify-end
         w-full
+        gap-2
         ">
-            <IconDescBtn label='Cancel'/>
+            <IconDescBtn label="Cancel" onClick={()=>dispatch(dashboardOn())}/>
             <IconDescBtn type="submit" label='Create Member'/>
         </div> 
     </form>

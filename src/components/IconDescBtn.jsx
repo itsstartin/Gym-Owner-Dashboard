@@ -24,13 +24,13 @@ function IconDescBtn(props) {
     gap-2
     `}>
       {!Icon ? <>
-      <img
+      {/* <img
         className='
         w-6
         h-6
         '
-        />
-        <p>Button</p>
+        /> */}
+        <p>{props.label ? props.label : 'Button'}</p>
         </>
          :
          <>

@@ -4,8 +4,11 @@ import IconDescBtn from '../components/IconDescBtn'
 import StatsCard from '../components/StatsCard'
 import GraphCard from '../components/GraphCard'
 import { ChartLine, DollarSign, FileText, Plus, UserCheck, Users } from 'lucide-react'
+import { useDispatch } from 'react-redux'
+import { addMemberOn } from '../features/currentPageSlice'
 
 function DashboardContent() {
+    const dispatch = useDispatch()
   return (
     <div className='
     flex
@@ -33,7 +36,7 @@ function DashboardContent() {
                 lg:grid-cols-2
                 gap-2
                 '>
-                <IconDescBtn icon={Plus} label='Add Member' />
+                <IconDescBtn icon={Plus} label='Add Member' onClick={()=>dispatch(addMemberOn())}/>
                 <IconDescBtn icon={FileText} label='View Reports'/>
                 </div>
             </div>

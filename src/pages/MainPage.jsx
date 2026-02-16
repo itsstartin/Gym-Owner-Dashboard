@@ -4,6 +4,8 @@ import DashboardContent from '../combinedComponents/DashboardContent'
 import { useSelector } from 'react-redux'
 import MemberMenuContent from '../combinedComponents/MemberMenuContent'
 import AddMemberForm from '../components/AddMemberForm'
+import PaymentsMenuContent from '../combinedComponents/PaymentsMenuContent'
+import ReportsMenuContent from '../combinedComponents/ReportsMenuContent'
 
 function MainPage() {
   const currentPageState = useSelector((state)=>state.currentPageState.value)
@@ -21,9 +23,24 @@ function MainPage() {
           :
           currentPageState==='Members' ?
           <MemberMenuContent/>
+          :
+          currentPageState==='addMember' ?
+          <>
+          <DashboardContent/>
+          <AddMemberForm/>
+          </>
+          :
+          currentPageState==='Payments' ?
+          <PaymentsMenuContent/>
+          
+          :
+          currentPageState==='Reports' ?
+          <ReportsMenuContent/>
+          
           :''
+
         }
-        <AddMemberForm/>
+        
     </div>
   )
 }

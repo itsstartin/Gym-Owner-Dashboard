@@ -1,3 +1,4 @@
+import { Funnel, Search, SearchAlert, SearchIcon } from 'lucide-react'
 import React from 'react'
 
 function MemberSearchBar() {
@@ -5,36 +6,42 @@ function MemberSearchBar() {
     <div className='
     flex
     rounded-[8px]
-    bg-black
-    text-white
+    bg-gray-900
+    text-gray-400
     justify-end
     items-center
-    gap-4
+    gap-2
     w-full
+    p-4
+    outline-1
+    outline-gray-800
+    
     '>
-        <input
-        type='text'
-        placeholder='Search member'
-        className='w-full'
-        />
+        <div className='flex w-full outline-1 outline-gray-700 rounded-[8px] p-1'>
+
+          <Search/>
+          <input
+          type='text'
+          placeholder='Search member'
+          className='w-full
+          outline-none
+          '
+          />
+        </div>
         <div className='
         flex
         gap-2
+        bg-gray-900 outline-1 outline-gray-700 rounded-[8px] p-1
         '>
-            <img
-            className='
-            w-8
-            h-8
-            '
-            />
-            <select value=''>
+            <Funnel/>
+            <select value='' className='bg-gray-900 outline-none'>
                 <option value=''>All Status</option>
                 <option value=''>Active</option>
                 <option value=''>Expired</option>
                 <option value=''>Due</option>
             </select>
         </div>
-        <select value=''>
+        <select value='' className='bg-gray-900 outline-1 outline-gray-700 rounded-[8px] p-1'>
                 <option value=''>All Types</option>
                 <option value=''>Basic</option>
                 <option value=''>Premium</option>

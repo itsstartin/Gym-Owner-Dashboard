@@ -24,6 +24,8 @@ function SideBar() {
     p-2
     h-screen
     bg-gray-900
+    outline-1
+  outline-gray-800
     `}>
         <GymIcon/>
         <div className='
@@ -33,6 +35,7 @@ function SideBar() {
         h-full
         gap-2
         w-full
+        
         
         '>
             <IconDescBtn sb icon={LayoutDashboard} label='Dashboard' onClick={()=>dispatch(dashboardOn())}/>

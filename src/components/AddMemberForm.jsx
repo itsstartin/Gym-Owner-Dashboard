@@ -1,15 +1,17 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import IconDescBtn from './IconDescBtn'
 import axios from '../axios'
 import { useDispatch } from 'react-redux'
 import { dashboardOn } from '../features/currentPageSlice'
+
 
 function AddMemberForm() {
     const dispatch = useDispatch()
     const [memberForm,setMemberForm]=useState({
         'name':"",
         'email':"",
-        'phone_number':""
+        'phone_number':"",
+        'membership_plan_id':""
     })
     const handleChange = (e)=>{
         e.preventDefault();
@@ -27,7 +29,8 @@ function AddMemberForm() {
             setMemberForm({
                 'name':"",
                 'email':"",
-                'phone_number':""
+                'phone_number':"",
+                'membership_plan_id':""
             
             })
             alert("Member Added successfully")
@@ -38,6 +41,13 @@ function AddMemberForm() {
         }
         
     }
+    const [plans,setPlans]=useState([])
+    useEffect(()=>{
+        axios.get('/members/getplans').then((res)=>{
+            setPlans(res.data)
+            
+        })
+    },[])
 
   return (
     <div className='
@@ -95,6 +105,15 @@ function AddMemberForm() {
             value={memberForm.phone_number}>
             </input>
         </div>
+        <select value={memberForm.membership_plan_id} name='membership_plan_id' className='w-full bg-gray-950' onChange={(e)=>handleChange(e)}>
+            <option value="">Select Plan</option>
+            {plans ? 
+            plans.map((obj)=>{
+                return <option value={obj.id} key={obj.id}>{obj.name} - {obj.plan_price}</option>
+            })
+            :''}
+        </select>
+        
         <div className="
         flex
         justify-end

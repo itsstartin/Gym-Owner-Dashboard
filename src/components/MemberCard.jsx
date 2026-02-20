@@ -2,7 +2,7 @@ import React from 'react'
 import MemberStatus from './MemberStatus'
 
 function MemberCard(props) {
-    const memberName = props.name
+    
 
   return (
     <div className='
@@ -28,8 +28,8 @@ function MemberCard(props) {
             flex-col
             w-full
             '>  
-                <h1>{memberName}</h1>
-                <p>johndoe@gmail.com</p>
+                <h1>{props.member.name}</h1>
+                <p>{props.member.email}</p>
             </div>
             <button className='
             h-6
@@ -56,7 +56,7 @@ function MemberCard(props) {
             justify-end
             w-full
             '>
-                <p>1/15/2004</p>
+                <p>{new Date(props.member.created_at).toLocaleDateString()}</p>
             </div>
 
         </div>
@@ -70,7 +70,7 @@ function MemberCard(props) {
             justify-end
             w-full
             '>
-            <p>+91 9988998899</p>
+            <p>{props.member.phone_number}</p>
             </div>
         </div>
         <div className='

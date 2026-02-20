@@ -34,7 +34,7 @@ function MemberMenuContent() {
         '>
             { members.map((obj)=>{
               console.log(obj.name)
-              return <MemberCard name={obj.name}/>
+              return <MemberCard member={obj}/>
             })}
             
 

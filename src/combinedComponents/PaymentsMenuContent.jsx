@@ -1,13 +1,25 @@
 import { CircleAlert, CircleCheckBig, CircleDollarSign, Clock4, Plus } from 'lucide-react'
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { useDispatch } from 'react-redux'
 import WelcomeHeader from '../components/WelcomeHeader'
 import IconDescBtn from '../components/IconDescBtn'
 import StatsCard from '../components/StatsCard'
 import GraphCard from '../components/GraphCard'
 import { addPaymentOn } from '../features/currentPageSlice'
+import axios from '../axios'
+import PaymentCard from '../components/PaymentCard'
 
 function PaymentsMenuContent() {
+    const [recentPayments,setRecentPayments]=useState([])
+    useEffect(()=>{
+        axios.get('members/getpayments').then((res)=>{
+            setRecentPayments(res.data)
+        })
+    },[])
+    // const handleMember = async(id)=>{
+    //     const memberData =await axios.get(`members/get/${id}`)
+    //     return memberData.data
+    // }
     const dispatch = useDispatch()
     return (
       <div className='
@@ -57,7 +69,19 @@ function PaymentsMenuContent() {
           md:grid-cols-2
           gap-4
           '>
-              <GraphCard/>
+              <div className='flex flex-col gap-2'>
+                <div className='flex flex-col'>
+                    <h1>Recent Transactions</h1>
+                    <p>Latest payment transactions from members</p>
+                </div>
+                {
+                [...recentPayments].reverse().map((obj)=> {
+                //    const data = handleMember(obj.member)
+                //    console.log("the data is",data.name)
+                   return <PaymentCard data={obj}/>
+                })}
+
+              </div>
               <GraphCard/>
           </div>
   

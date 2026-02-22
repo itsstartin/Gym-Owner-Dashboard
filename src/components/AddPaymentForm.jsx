@@ -122,7 +122,7 @@ function AddPaymentForm() {
         gap-2
         ">
             <IconDescBtn label="Cancel" onClick={()=>dispatch(paymentsOn())}/>
-            <IconDescBtn type="submit" label='Create Member'/>
+            <IconDescBtn type="submit" label='Create Payment'/>
         </div> 
     </form>
     </div>

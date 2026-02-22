@@ -1,13 +1,19 @@
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
-from . models import Member , MembershipPlan
+from . models import Member , MembershipPlan, RecentPayment
 from . serializer import MemberSerializer, RecentPaymentSerializer , MembershipPlanSerializer
 
 @api_view(['GET'])
-def get_member(request):
+def get_members(request):
     members = Member.objects.all()
     serializer = MemberSerializer(members, many=True)
+    return Response(serializer.data)
+
+@api_view(['GET'])
+def get_member(request , id):
+    member = Member.objects.get(id=id)
+    serializer = MemberSerializer(member)
     return Response(serializer.data)
 
 @api_view(['GET'])
@@ -15,6 +21,21 @@ def get_plans(request):
     plans = MembershipPlan.objects.all()
     serializer = MembershipPlanSerializer(plans, many=True)
     return Response(serializer.data)
+
+@api_view(['GET'])
+def get_payments(request):
+    payments = RecentPayment.objects.all()
+    serializer = RecentPaymentSerializer(payments, many=True)
+    return Response(serializer.data)
+
+@api_view(['PATCH'])
+def update_member(request,id):
+    member = Member.objects.get(id=id)
+    serializer = MemberSerializer(member, data =request.data ,partial=True)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data,status=status.HTTP_202_ACCEPTED)
+    return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(['POST'])

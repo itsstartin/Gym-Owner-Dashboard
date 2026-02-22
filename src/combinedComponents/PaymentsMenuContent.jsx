@@ -1,10 +1,11 @@
-import { CircleAlert, CircleCheckBig, CircleDollarSign, Clock4, DollarSign, Send } from 'lucide-react'
+import { CircleAlert, CircleCheckBig, CircleDollarSign, Clock4, Plus } from 'lucide-react'
 import React from 'react'
 import { useDispatch } from 'react-redux'
 import WelcomeHeader from '../components/WelcomeHeader'
 import IconDescBtn from '../components/IconDescBtn'
 import StatsCard from '../components/StatsCard'
 import GraphCard from '../components/GraphCard'
+import { addPaymentOn } from '../features/currentPageSlice'
 
 function PaymentsMenuContent() {
     const dispatch = useDispatch()
@@ -33,7 +34,7 @@ function PaymentsMenuContent() {
                   grid
                   grid-cols-1
                   '>
-                  <IconDescBtn icon={Send} label='Send Reminders'/>
+                  <IconDescBtn icon={Plus} label='Add Payment' onClick={()=>dispatch(addPaymentOn())}/>
                   </div>
               </div>
   

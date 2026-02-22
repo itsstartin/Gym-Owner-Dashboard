@@ -6,9 +6,10 @@ const currentPageSlice = createSlice({
         dashboardOn:(state)=>{state.value='Dashboard'},
         membersOn:(state)=>{state.value='Members'},
         paymentsOn:(state)=>{state.value='Payments'},
-        addMemberOn:(state)=>{state.value='addMember'},
         reportsOn:(state)=>{state.value='Reports'}, 
+        addMemberOn:(state)=>{state.value='addMember'},
+        addPaymentOn:(state)=>{state.value='addPayment'},
     }
 })
-export const {dashboardOn,membersOn,paymentsOn,reportsOn, addMemberOn} = currentPageSlice.actions;
+export const {dashboardOn,membersOn,paymentsOn,reportsOn, addMemberOn, addPaymentOn} = currentPageSlice.actions;
 export default currentPageSlice.reducer;

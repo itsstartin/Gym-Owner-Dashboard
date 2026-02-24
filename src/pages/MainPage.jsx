@@ -7,6 +7,9 @@ import AddMemberForm from '../components/AddMemberForm'
 import PaymentsMenuContent from '../combinedComponents/PaymentsMenuContent'
 import ReportsMenuContent from '../combinedComponents/ReportsMenuContent'
 import AddPaymentForm from '../components/AddPaymentForm'
+import LoginComp from '../components/LoginComp'
+import SignUp from '../components/SignUp'
+
 
 function MainPage() {
   const currentPageState = useSelector((state)=>state.currentPageState.value)
@@ -17,7 +20,9 @@ function MainPage() {
     bg-gray-950
     text-white
     '>
-        <SideBar/>
+        <SignUp/>
+        
+        {/* <SideBar/>
         {
           currentPageState==='Dashboard' ?
           <DashboardContent/>
@@ -46,7 +51,7 @@ function MainPage() {
           
           :''
 
-        }
+        } */}
         
     </div>
   )

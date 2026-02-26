@@ -1,6 +1,6 @@
-from email.policy import default
 from django.db import models
 from django.core.validators import RegexValidator
+from django.contrib.auth.models import User
 
 phone_regex = RegexValidator(
     regex=r'^\+?\d{7,15}$',
@@ -10,6 +10,7 @@ phone_regex = RegexValidator(
 PAYMENT_TYPE_CHOICES=[('card','Card'),('cash','Cash'),('upi','UPI')]
 # Create your models here.
 class Member(models.Model):
+    user = models.ForeignKey(User,on_delete=models.CASCADE)
     name = models.CharField(max_length=50)
     phone_number = models.CharField(
         validators=[phone_regex],
@@ -31,6 +32,7 @@ class Member(models.Model):
     
 
 class RecentPayment(models.Model):
+    user = models.ForeignKey(User,on_delete=models.CASCADE)
     member=models.ForeignKey('Member',on_delete=models.CASCADE,related_name='recentPayment')
     amount=models.FloatField()
     payment_type=models.CharField(

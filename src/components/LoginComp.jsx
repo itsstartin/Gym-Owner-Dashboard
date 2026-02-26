@@ -1,9 +1,12 @@
 import { Dumbbell } from "lucide-react";
 import React, { useState } from "react";
+import axios from '../axios'
+import {useNavigate} from 'react-router-dom'
 
 const LoginComp = () => {
+  const navigate = useNavigate()
   const [form, setForm] = useState({
-    email: "",
+    username: "",
     password: "",
   });
 
@@ -14,10 +17,23 @@ const LoginComp = () => {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     console.log(form);
     // call your signup API here
+    try{
+      await axios.post('login/',form).then((res)=>{
+        localStorage.setItem("token",res.data.access)
+        alert("User Logined")
+        setForm({
+          username: "",
+          password: "",
+        })
+        navigate('/gymapp')
+      })
+    }catch(error){
+      alert(error)
+    }
   };
 
   return (
@@ -45,10 +61,10 @@ const LoginComp = () => {
           <div>
             <label className="text-sm text-zinc-300">Email</label>
             <input
-              type="email"
-              name="email"
-              placeholder="admin@gympro.com"
-              value={form.email}
+              type="text"
+              name="username"
+              placeholder="salimrash"
+              value={form.username}
               onChange={handleChange}
               className="w-full mt-1 px-3 py-2 rounded-lg bg-zinc-800 border border-zinc-700 text-white focus:outline-none focus:ring-2 focus:ring-green-600"
               required

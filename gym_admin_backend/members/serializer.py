@@ -17,8 +17,14 @@ class MemberSerializer(serializers.ModelSerializer):
     class Meta:
         model = Member
         fields = '__all__'
+        extra_kwargs = {
+            'user': {'read_only': True}
+        }
 
 class RecentPaymentSerializer(serializers.ModelSerializer):
     class Meta:
         model = RecentPayment
         fields = '__all__'
+        extra_kwargs = {
+            'user': {'read_only': True}
+        }

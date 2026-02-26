@@ -1,4 +1,5 @@
 import React from 'react'
+import {Routes, Route} from 'react-router'
 import SideBar from '../combinedComponents/SideBar'
 import DashboardContent from '../combinedComponents/DashboardContent'
 import { useSelector } from 'react-redux'
@@ -9,6 +10,7 @@ import ReportsMenuContent from '../combinedComponents/ReportsMenuContent'
 import AddPaymentForm from '../components/AddPaymentForm'
 import LoginComp from '../components/LoginComp'
 import SignUp from '../components/SignUp'
+import ProtectedRoute from '../features/ProtectedRoute'
 
 
 function MainPage() {
@@ -20,39 +22,43 @@ function MainPage() {
     bg-gray-950
     text-white
     '>
-        <SignUp/>
-        
-        {/* <SideBar/>
-        {
-          currentPageState==='Dashboard' ?
-          <DashboardContent/>
-          :
-          currentPageState==='Members' ?
-          <MemberMenuContent/>
-          :
-          currentPageState==='addMember' ?
-          <>
-          <DashboardContent/>
-          <AddMemberForm/>
-          </>
-          :
-          currentPageState==='Payments' ?
-          <PaymentsMenuContent/>
-          :
-          currentPageState==='addPayment' ?
-          <>
-          <PaymentsMenuContent/>
-          <AddPaymentForm/>
-          </>
-          
-          :
-          currentPageState==='Reports' ?
-          <ReportsMenuContent/>
-          
-          :''
-
-        } */}
-        
+      <Routes>
+        <Route Component={SignUp} exact path='/'/>
+        <Route element={<LoginComp/>} path='/login'/>
+        <Route element={
+          <ProtectedRoute>
+            <>
+            <SideBar/>
+            {
+              currentPageState==='Dashboard' ?
+              <DashboardContent/>
+              :
+              currentPageState==='Members' ?
+              <MemberMenuContent/>
+              :
+              currentPageState==='addMember' ?
+              <> 
+                <DashboardContent/>
+                <AddMemberForm/>
+              </>
+              :
+              currentPageState==='Payments' ?
+              <PaymentsMenuContent/>
+              :
+              currentPageState==='addPayment' ?
+              <>
+                <PaymentsMenuContent/>
+                <AddPaymentForm/>
+              </>
+              :
+              currentPageState==='Reports' ?
+              <ReportsMenuContent/>
+              :''
+            }
+            </> 
+          </ProtectedRoute>
+        } path='/gymapp'/>
+      </Routes>
     </div>
   )
 }

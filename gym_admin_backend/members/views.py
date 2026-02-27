@@ -4,21 +4,20 @@ from rest_framework.decorators import api_view , permission_classes
 from rest_framework.response import Response
 from rest_framework import status
 from . models import Member , MembershipPlan, RecentPayment
-from . serializer import MemberSerializer, RecentPaymentSerializer , MembershipPlanSerializer
+from . serializer import UserSerializer ,MemberSerializer, RecentPaymentSerializer , MembershipPlanSerializer
 
 @api_view(['POST'])
 def register(request):
-    username = request.data['username']
-    password = request.data['password']
-    if User.objects.filter(username=username).exists():
-        return Response({"error":"User already exists"})
-    User.objects.create_user(username=username,password=password)
-    return Response({"msg":"User created"})
+    serializer = UserSerializer(data=request.data)
+    if serializer.is_valid():
+        serializer.save()
+        return Response({"msg":"User Created"},status=status.HTTP_201_CREATED)
+    return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_members(request):
-    members = Member.objects.all()
+    members = Member.objects.filter(user=request.user)
     serializer = MemberSerializer(members, many=True)
     return Response(serializer.data)
 

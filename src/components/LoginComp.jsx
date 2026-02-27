@@ -1,6 +1,6 @@
 import { Dumbbell } from "lucide-react";
 import React, { useState } from "react";
-import axios from '../axios'
+import axios from '../axios_simple'
 import {useNavigate} from 'react-router-dom'
 
 const LoginComp = () => {
@@ -59,7 +59,7 @@ const LoginComp = () => {
 
           {/* Email */}
           <div>
-            <label className="text-sm text-zinc-300">Email</label>
+            <label className="text-sm text-zinc-300">Username</label>
             <input
               type="text"
               name="username"
@@ -95,7 +95,9 @@ const LoginComp = () => {
         {/* Footer */}
         <p className="text-center text-sm text-zinc-400 mt-6">
           Don't have an account?{" "}
-          <span className="text-green-500 hover:underline cursor-pointer">
+          <span className="text-green-500 hover:underline cursor-pointer"
+          onClick={()=>navigate('/')}
+          >
             Create
           </span>
         </p>

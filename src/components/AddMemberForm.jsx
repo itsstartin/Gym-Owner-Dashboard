@@ -14,7 +14,6 @@ function AddMemberForm() {
         'membership_plan_id':""
     })
     const handleChange = (e)=>{
-        e.preventDefault();
         const {name , value} = e.target;
         setMemberForm((prev)=>({
             ...prev,

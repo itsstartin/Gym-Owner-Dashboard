@@ -1,12 +1,16 @@
 import { Dumbbell } from "lucide-react";
 import React, {useState} from 'react'
+import { useNavigate } from "react-router-dom";
+import axios from "../axios_simple";
 
 function SignUp() {
+  const navigate = useNavigate()
     const [form, setForm] = useState({
-        name: "",
+        username: "",
         email: "",
         password: "",
         confirmPassword: "",
+        
       });
     
       const handleChange = (e) => {
@@ -16,12 +20,37 @@ function SignUp() {
         });
       };
     
-      const handleSubmit = (e) => {
+      const handleSubmit = async (e) => {
         e.preventDefault();
-        console.log(form);
+        if (form.password !== form.confirmPassword) {
+          alert("Password and Confirm Password must match");
+          return;
+        }
         // call your signup API here
+        try{
+          const { confirmPassword, ...payload } = form;
+          console.log(payload);
+          const response = await axios.post('register/', payload)
+          alert("User Created")
+          navigate('login/')
+          console.log("User Created and Saved",response.data)
+          setForm({
+            'username':"",
+            'email':"",
+            'password':"",
+            'confirmPassword':'',
+        })
+        }catch(error){
+          console.error(error.response.data)
+          alert("Error saving data")
+        }
       };
     
+      const passwordMismatch =
+        form.password.length > 0 &&
+        form.confirmPassword.length > 0 &&
+        form.password !== form.confirmPassword;
+
       return (
         <div className="min-h-screen max-h-full bg-black flex items-center justify-center  w-full">
           {/* Card */} 
@@ -48,9 +77,9 @@ function SignUp() {
                 <label className="text-sm text-zinc-300">Full Name</label>
                 <input
                   type="text"
-                  name="name"
-                  placeholder="Salim"
-                  value={form.name}
+                  name="username"
+                  placeholder="Create your username"
+                  value={form.username}
                   onChange={handleChange}
                   className="w-full mt-1 px-3 py-2 rounded-lg bg-zinc-800 border border-zinc-700 text-white focus:outline-none focus:ring-2 focus:ring-green-600"
                   required
@@ -63,7 +92,7 @@ function SignUp() {
                 <input
                   type="email"
                   name="email"
-                  placeholder="admin@gympro.com"
+                  placeholder="Enter your email"
                   value={form.email}
                   onChange={handleChange}
                   className="w-full mt-1 px-3 py-2 rounded-lg bg-zinc-800 border border-zinc-700 text-white focus:outline-none focus:ring-2 focus:ring-green-600"
@@ -77,7 +106,7 @@ function SignUp() {
                 <input
                   type="password"
                   name="password"
-                  placeholder="******"
+                  placeholder="Enter you Password"
                   value={form.password}
                   onChange={handleChange}
                   className="w-full mt-1 px-3 py-2 rounded-lg bg-zinc-800 border border-zinc-700 text-white focus:outline-none focus:ring-2 focus:ring-green-600"
@@ -91,18 +120,24 @@ function SignUp() {
                 <input
                   type="password"
                   name="confirmPassword"
-                  placeholder="******"
+                  placeholder="Confirm you Password"
                   value={form.confirmPassword}
                   onChange={handleChange}
                   className="w-full mt-1 px-3 py-2 rounded-lg bg-zinc-800 border border-zinc-700 text-white focus:outline-none focus:ring-2 focus:ring-green-600"
                   required
                 />
+                {passwordMismatch ? (
+                  <p className="mt-1 text-sm text-red-400">
+                    Passwords do not match.
+                  </p>
+                ) : null}
               </div>
     
               {/* Button */}
               <button
                 type="submit"
-                className="w-full bg-green-600 hover:bg-green-700 transition py-2 rounded-lg text-white font-semibold mt-2"
+                disabled={passwordMismatch}
+                className="w-full bg-green-600 hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition py-2 rounded-lg text-white font-semibold mt-2"
               >
                 Create Account
               </button>
@@ -111,7 +146,8 @@ function SignUp() {
             {/* Footer */}
             <p className="text-center text-sm text-zinc-400 mt-6">
               Already have an account?{" "}
-              <span className="text-green-500 hover:underline cursor-pointer">
+              <span className="text-green-500 hover:underline cursor-pointer"
+              onClick={()=>navigate('/login')}>
                 Login
               </span>
             </p>

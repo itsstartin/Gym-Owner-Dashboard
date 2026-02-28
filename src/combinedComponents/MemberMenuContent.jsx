@@ -8,7 +8,6 @@ function MemberMenuContent() {
   const [members, setMembers]=useState([])
   useEffect(()=>{
     getMembers().then((response)=>{
-      console.log(response.data[0])
       setMembers(response.data)
     })
   },[])

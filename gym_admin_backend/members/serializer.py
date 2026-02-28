@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
 from rest_framework import serializers
-from . models import Member, RecentPayment, MembershipPlan
+from . models import Attendance, Member, RecentPayment, MembershipPlan
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -41,6 +41,14 @@ class RecentPaymentSerializer(serializers.ModelSerializer):
     class Meta:
         model = RecentPayment
         fields = '__all__'
+        extra_kwargs = {
+            'user': {'read_only': True}
+        }
+
+class AttendanceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Attendance
+        fields = ['member']
         extra_kwargs = {
             'user': {'read_only': True}
         }

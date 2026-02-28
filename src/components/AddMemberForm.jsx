@@ -105,7 +105,7 @@ function AddMemberForm() {
             </input>
         </div>
         <select value={memberForm.membership_plan_id} name='membership_plan_id' className='w-full bg-gray-950' onChange={(e)=>handleChange(e)}>
-            <option value="">Select Plan</option>
+            <option value=''>Select Plan</option>
             {plans ? 
             plans.map((obj)=>{
                 return <option value={obj.id} key={obj.id}>{obj.name} - {obj.plan_price}</option>

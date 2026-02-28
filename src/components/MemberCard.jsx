@@ -1,9 +1,23 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import MemberStatus from './MemberStatus'
+import axios from '../axios';
 
 function MemberCard(props) {
-    
-
+    const [enabled, setEnabled] = useState(false);
+    useEffect(()=>{
+        axios.get(`members/getattendance/${props.member.id}`).then((res)=>{
+            res.data.length===0 ?
+            console.log(res.data) : 
+            setEnabled(true)
+        })
+    },[]) 
+    const markAttendance = () => {
+        const today = new Date().toISOString().split('T')[0];
+        axios.post('members/markattendance',{
+            member:props.member.id,
+            date:today
+        })
+    }   
   return (
     <div className='
     flex
@@ -31,11 +45,22 @@ function MemberCard(props) {
                 <h1>{props.member.name}</h1>
                 <p>{props.member.email}</p>
             </div>
-            <button className='
-            h-6
-            w-2
-            '>
+            <button
+            onClick={() => markAttendance()}
+            className={`${
+            enabled ? 'bg-indigo-600' : 'bg-gray-200'
+            } relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2`}
+            >
+            <span className="sr-only">Enable setting</span>
+            <span
+            className={`${
+            enabled ? 'translate-x-6' : 'translate-x-1'
+            } inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-300`}
+            />
             </button>
+            <span className="ml-3 text-sm font-medium text-gray-900">
+            {enabled ? 'Active' : 'Paused'}
+            </span>
 
         </div>
         <div className='

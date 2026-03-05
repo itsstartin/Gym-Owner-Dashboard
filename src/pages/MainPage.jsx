@@ -11,6 +11,7 @@ import AddPaymentForm from '../components/AddPaymentForm'
 import LoginComp from '../components/LoginComp'
 import SignUp from '../components/SignUp'
 import ProtectedRoute from '../features/ProtectedRoute'
+import LogoutBox from '../components/LogoutBox'
 
 
 function MainPage() {
@@ -53,6 +54,11 @@ function MainPage() {
               :
               currentPageState==='Reports' ?
               <ReportsMenuContent/>
+              :
+              currentPageState==='logout' ?
+              <>
+                <LogoutBox/>
+              </>
               :''
             }
             </> 

@@ -48,7 +48,7 @@ class RecentPaymentSerializer(serializers.ModelSerializer):
 class AttendanceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Attendance
-        fields = ['member']
+        fields = ['member','date']
         extra_kwargs = {
             'user': {'read_only': True}
         }

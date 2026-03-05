@@ -73,9 +73,23 @@ def create_payment(request):
 def mark_attendance(request):
     serializer = AttendanceSerializer(data=request.data)
     if serializer.is_valid():
+        member = serializer.validated_data['member']
+        if Attendance.objects.filter(user=request.user,member=member,date=date.today()).exists():
+            return Response({"msg":"Attendance already marked"},status=status.HTTP_400_BAD_REQUEST)
         serializer.save(user=request.user)
         return Response(serializer.data,status=status.HTTP_201_CREATED)
     return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def delete_attendance(request,id):
+    attendance = Attendance.objects.filter(
+        user=request.user,
+        member=id,
+        date=date.today()
+    )
+    attendance.delete()
+    return Response(status=status.HTTP_204_NO_CONTENT)
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])

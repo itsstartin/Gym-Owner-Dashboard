@@ -1,7 +1,19 @@
-import { Funnel, Search, SearchAlert, SearchIcon } from 'lucide-react'
-import React from 'react'
+import { Funnel, Search } from 'lucide-react'
+import React, { useState } from 'react'
 
 function MemberSearchBar() {
+
+  const [searchValue, setSearchValue] = useState({
+    search: '',
+    status: '',
+    type: '',
+  })
+  const handleChange = (e) => {
+    setSearchValue({
+      ...searchValue,
+      [e.target.name]: e.target.value
+    })
+  }
   return (
     <div className='
     flex
@@ -21,11 +33,14 @@ function MemberSearchBar() {
 
           <Search/>
           <input
+          value={searchValue.search}
+          name='search'
           type='text'
           placeholder='Search member'
           className='w-full
           outline-none
           '
+          onChange={handleChange}
           />
         </div>
         <div className='
@@ -34,18 +49,18 @@ function MemberSearchBar() {
         bg-gray-900 outline-1 outline-gray-700 rounded-[8px] p-1
         '>
             <Funnel/>
-            <select value='' className='bg-gray-900 outline-none'>
+            <select value={searchValue.status} name='status' className='bg-gray-900 outline-none' onChange={handleChange}>
                 <option value=''>All Status</option>
-                <option value=''>Active</option>
-                <option value=''>Expired</option>
-                <option value=''>Due</option>
+                <option value='active'>Active</option>
+                <option value='expired'>Expired</option>
+                <option value='due'>Due</option>
             </select>
         </div>
-        <select value='' className='bg-gray-900 outline-1 outline-gray-700 rounded-[8px] p-1'>
+        <select value={searchValue.type} name='type' className='bg-gray-900 outline-1 outline-gray-700 rounded-[8px] p-1' onChange={handleChange}>
                 <option value=''>All Types</option>
-                <option value=''>Basic</option>
-                <option value=''>Premium</option>
-                <option value=''>VIP</option>
+                <option value='basic'>Basic</option>
+                <option value='premium'>Premium</option>
+                <option value='vip'>VIP</option>
         </select>
     </div>
   )

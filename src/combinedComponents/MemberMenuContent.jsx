@@ -9,6 +9,11 @@ import { useDispatch, useSelector } from 'react-redux'
 import { markAttendanceOff, markAttendanceOn } from '../features/markAttendanceSlice'
 
 function MemberMenuContent() {
+  const [filterValue, setFilterValue] = useState({
+    search: '',
+    status: '',
+    type: '',
+  })
   const markAttendanceState = useSelector((state)=>state.markAttendanceState.value)
   const dispatch = useDispatch()
   const [members, setMembers]=useState([])
@@ -20,7 +25,10 @@ function MemberMenuContent() {
       dispatch(markAttendanceOff())
     }
   },[])
-  return (
+  const filteredMembers = members.filter((obj)=>{
+    return obj.name.toLowerCase().includes(filterValue.search.toLowerCase()) && (filterValue.status==='' || obj.status===filterValue.status) && (filterValue.type==='' || obj.membership_plan.name===filterValue.type)
+  })
+    return (
     <div className='
     flex
     flex-col 
@@ -51,7 +59,7 @@ function MemberMenuContent() {
               </div>
   
           </div>
-        <MemberSearchBar/>
+        <MemberSearchBar filterValue={filterValue} setFilterValue={setFilterValue}/>
         <div className='
         grid
         grid-cols-1
@@ -60,12 +68,24 @@ function MemberMenuContent() {
         gap-4
         
         '>
-            { members.map((obj)=>{
-              console.log(obj.name)
+            {
+            filteredMembers.length>0 ?
+            filteredMembers.map((obj)=>{
               return <MemberCard member={obj}/>
-            })}
-            
-
+            })
+            :
+            <div className='
+            col-span-1
+            flex
+            flex-col
+            justify-center
+            items-center
+            gap-2
+            '>
+              <h1 className='text-white text-2xl font-bold'>No members found</h1>
+              <p className='text-gray-400 text-sm'>Please try again with different filters or search</p>
+            </div>
+            }
         </div>
 
     </div>

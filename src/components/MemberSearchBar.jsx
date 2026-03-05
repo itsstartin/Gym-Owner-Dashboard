@@ -1,16 +1,11 @@
 import { Funnel, Search } from 'lucide-react'
 import React, { useState } from 'react'
 
-function MemberSearchBar() {
+function MemberSearchBar({filterValue, setFilterValue}) {
 
-  const [searchValue, setSearchValue] = useState({
-    search: '',
-    status: '',
-    type: '',
-  })
   const handleChange = (e) => {
-    setSearchValue({
-      ...searchValue,
+    setFilterValue({
+      ...filterValue,
       [e.target.name]: e.target.value
     })
   }
@@ -33,7 +28,7 @@ function MemberSearchBar() {
 
           <Search/>
           <input
-          value={searchValue.search}
+          value={filterValue.search}
           name='search'
           type='text'
           placeholder='Search member'
@@ -49,18 +44,18 @@ function MemberSearchBar() {
         bg-gray-900 outline-1 outline-gray-700 rounded-[8px] p-1
         '>
             <Funnel/>
-            <select value={searchValue.status} name='status' className='bg-gray-900 outline-none' onChange={handleChange}>
+            <select value={filterValue.status} name='status' className='bg-gray-900 outline-none' onChange={handleChange}>
                 <option value=''>All Status</option>
                 <option value='active'>Active</option>
                 <option value='expired'>Expired</option>
                 <option value='due'>Due</option>
             </select>
         </div>
-        <select value={searchValue.type} name='type' className='bg-gray-900 outline-1 outline-gray-700 rounded-[8px] p-1' onChange={handleChange}>
+        <select value={filterValue.type} name='type' className='bg-gray-900 outline-1 outline-gray-700 rounded-[8px] p-1' onChange={handleChange}>
                 <option value=''>All Types</option>
-                <option value='basic'>Basic</option>
-                <option value='premium'>Premium</option>
-                <option value='vip'>VIP</option>
+                <option value='Basic'>Basic</option>
+                <option value='Premium'>Premium</option>
+                <option value='VIP'>VIP</option>
         </select>
     </div>
   )

@@ -3,6 +3,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import api_view , permission_classes
 from rest_framework.response import Response
 from rest_framework import status
+from members.services.payment_calc import calc_revenue
 from . models import Attendance, Member , MembershipPlan, RecentPayment
 from . serializer import AttendanceSerializer, UserSerializer ,MemberSerializer, RecentPaymentSerializer , MembershipPlanSerializer
 from datetime import date
@@ -39,6 +40,12 @@ def get_payments(request):
     payments = RecentPayment.objects.all()
     serializer = RecentPaymentSerializer(payments, many=True)
     return Response(serializer.data)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_calc(request):
+    data = calc_revenue(request.user)
+    return Response(data)
 
 @api_view(['PATCH'])
 def update_member(request,id):

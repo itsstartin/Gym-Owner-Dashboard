@@ -1,11 +1,19 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import GraphCard from '../components/GraphCard'
 import StatsCard from '../components/StatsCard'
 import IconDescBtn from '../components/IconDescBtn'
 import WelcomeHeader from '../components/WelcomeHeader'
 import { Calendar, DollarSign, Download, TrendingUp, Users } from 'lucide-react'
+import axios from '../axios'
 
 function ReportsMenuContent() {
+    const [calcData,setCalcData]=useState({})
+    useEffect(()=>{
+        axios.get('members/getcalc').then((res)=>{
+            console.log(res.data)
+            setCalcData(res.data)
+        })
+    },[])
     return (
       <div className='
       flex
@@ -45,7 +53,7 @@ function ReportsMenuContent() {
           lg:grid-cols-3
           gap-4
           '>
-              <StatsCard icon={DollarSign} title='Total Revenue'/>
+              <StatsCard icon={DollarSign} title='Total Revenue' num={calcData.total_revenue}/>
               <StatsCard icon={Users} title='Avg. Daily Attendance'/>
               <StatsCard icon={TrendingUp} title='Member Retention'/>
           </div>

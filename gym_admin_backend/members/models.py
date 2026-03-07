@@ -8,6 +8,7 @@ phone_regex = RegexValidator(
 )
 # MEMBERSHIP_TYPE_CHOICES=[('basic','Basic'),('vip','VIP'),('premium','Premium')]
 PAYMENT_TYPE_CHOICES=[('card','Card'),('cash','Cash'),('upi','UPI')]
+# MEMBER_STATUS_CHOICES=[('active','Active'),('due','Due'),('expired','Expired')]
 # Create your models here.
 class Member(models.Model):
     user = models.ForeignKey(User,on_delete=models.CASCADE)
@@ -24,8 +25,14 @@ class Member(models.Model):
         null=True,
         related_name='members'
         )
-    total_cash_paid=models.FloatField(null=True,blank=True)
+    total_cash_paid=models.FloatField(default=0.0,blank=True)
     created_at=models.DateTimeField(auto_now_add=True)
+    membership_start_date=models.DateField()
+    # status = models.CharField(
+    #     max_length=20,
+    #     choices=MEMBER_STATUS_CHOICES,
+    #     default='active'
+    #     )
 
     def __str__(self) :
         return self.name
@@ -41,13 +48,14 @@ class RecentPayment(models.Model):
         default='cash',
         )
     created_at=models.DateTimeField(auto_now_add=True,null=True)
+    
 
 class MembershipPlan(models.Model):
     name=models.CharField(max_length=20,unique=True)  # e.g., 'Basic', 'VIP', 'Premium'
     plan_price=models.FloatField()
     
     def __str__(self):
-        return f"{self.name} - ${self.plan_price}"
+        return f"{self.name} - ₹{self.plan_price}"
 
 class Attendance(models.Model):
     user = models.ForeignKey(User,on_delete=models.CASCADE)

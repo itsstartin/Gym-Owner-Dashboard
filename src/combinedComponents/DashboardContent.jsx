@@ -3,7 +3,7 @@ import WelcomeHeader from '../components/WelcomeHeader'
 import IconDescBtn from '../components/IconDescBtn'
 import StatsCard from '../components/StatsCard'
 import GraphCard from '../components/GraphCard'
-import { ChartLine, DollarSign, FileText, Plus, UserCheck, Users } from 'lucide-react'
+import { ChartLine, FileText, IndianRupee, Plus, UserCheck, Users } from 'lucide-react'
 import { useDispatch } from 'react-redux'
 import { addMemberOn } from '../features/currentPageSlice'
 
@@ -51,7 +51,7 @@ function DashboardContent() {
         '>
             <StatsCard icon={Users} title='Active Members'/>
             <StatsCard icon={UserCheck} title='Trainers'/>
-            <StatsCard icon={DollarSign} title='Revenue This Month'/>
+            <StatsCard icon={IndianRupee} title='Revenue This Month'/>
             <StatsCard icon={ChartLine} title="Today's Attendance"/>
         </div>
         <div className='

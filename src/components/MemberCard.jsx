@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import MemberStatus from './MemberStatus'
+import MemberTag from './MemberTag'
 import axios from '../axios';
 import { useSelector } from 'react-redux';
 import Switch from '@mui/material/Switch';
@@ -72,7 +72,8 @@ function MemberCard(props) {
         items-center
         gap-2
         '>
-            <MemberStatus/>
+            <MemberTag plan={props.member.membership_plan.name}/>
+            <MemberTag status={props.member.status}/>
         </div>
         <div className='
         flex

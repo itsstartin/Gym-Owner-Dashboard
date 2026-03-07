@@ -11,7 +11,8 @@ function AddMemberForm() {
         'name':"",
         'email':"",
         'phone_number':"",
-        'membership_plan_id':""
+        'membership_plan_id':"",
+        'membership_start_date':"",
     })
     const handleChange = (e)=>{
         const {name , value} = e.target;
@@ -23,13 +24,15 @@ function AddMemberForm() {
     const handleSubmit= async (e)=>{
         e.preventDefault();
         try{
+            console.log(memberForm.membership_start_date)
             const response = await axios.post('members/create',memberForm)
             console.log("Saved",response.data)
             setMemberForm({
                 'name':"",
                 'email':"",
                 'phone_number':"",
-                'membership_plan_id':""
+                'membership_plan_id':"",
+                'membership_start_date':"",
             
             })
             alert("Member Added successfully")
@@ -112,6 +115,12 @@ function AddMemberForm() {
             })
             :''}
         </select>
+        <div>
+            <h1>Membership Start Date</h1>
+            <input type='date' value={memberForm.membership_start_date}
+             name='membership_start_date' onChange={(e)=>handleChange(e)}>
+            </input>
+        </div>
         
         <div className="
         flex

@@ -64,7 +64,7 @@ function StatsCard(props) {
         justify-between
         align-start
         '>
-            <h1 className='text-3xl font-extrabold'>{props.num ? `₹${props.num}`:'1247'}</h1>
+            <h1 className='text-3xl font-extrabold'>{props.num ? props.num:'1247'}</h1>
             <p className='text-[12px]'>+12% from last month</p>
 
         </div>

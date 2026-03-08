@@ -53,7 +53,7 @@ function ReportsMenuContent() {
           lg:grid-cols-3
           gap-4
           '>
-              <StatsCard icon={DollarSign} title='Total Revenue' num={calcData.total_revenue}/>
+              <StatsCard icon={DollarSign} title='Total Revenue' num={`₹${calcData.total_revenue}`}/>
               <StatsCard icon={Users} title='Avg. Daily Attendance'/>
               <StatsCard icon={TrendingUp} title='Member Retention'/>
           </div>

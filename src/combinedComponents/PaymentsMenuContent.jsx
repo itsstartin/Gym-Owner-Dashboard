@@ -11,9 +11,13 @@ import PaymentCard from '../components/PaymentCard'
 
 function PaymentsMenuContent() {
     const [recentPayments,setRecentPayments]=useState([])
+    const [calcData,setCalcData]=useState({})
     useEffect(()=>{
         axios.get('members/getpayments').then((res)=>{
             setRecentPayments(res.data)
+        })
+        axios.get('members/getcalc').then((res)=>{
+            setCalcData(res.data)
         })
     },[])
     // const handleMember = async(id)=>{
@@ -58,10 +62,10 @@ function PaymentsMenuContent() {
           lg:grid-cols-4
           gap-4
           '>
-              <StatsCard icon={CircleAlert} title='Payments Due'/>
-              <StatsCard icon={CircleDollarSign} title='Total Revenue This Month'/>
-              <StatsCard icon={CircleCheckBig} title='Completed Payments'/>
-              <StatsCard icon={Clock4} title="Processing"/>
+              <StatsCard icon={CircleAlert} title='Payments Due' num={`₹${calcData.overdue_amount}`}/>
+              <StatsCard icon={CircleDollarSign} title='Total Revenue This Month' num={`₹${calcData.total_revenue}`}/>
+              <StatsCard icon={CircleCheckBig} title='Completed Payments' num={calcData.payment_count}/>
+              <StatsCard icon={Clock4} title="Payment in Advance" num={`₹${calcData.advance_amount}`}/>
           </div>
           <div className='
           grid

@@ -85,7 +85,7 @@ function MemberCard(props) {
             justify-end
             w-full
             '>
-                <p>{new Date(props.member.created_at).toLocaleDateString()}</p>
+                <p>{new Date(props.member.membership_start_date).toLocaleDateString()}</p>
             </div>
 
         </div>

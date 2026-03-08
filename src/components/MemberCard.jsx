@@ -3,7 +3,7 @@ import MemberTag from './MemberTag'
 import axios from '../axios';
 import { useSelector } from 'react-redux';
 import Switch from '@mui/material/Switch';
-import { Check } from 'lucide-react';
+
 function MemberCard(props) {
     const [enabled, setEnabled] = useState(false);
     const markAttendanceState = useSelector((state)=>state.markAttendanceState.value)
@@ -15,7 +15,7 @@ function MemberCard(props) {
         })
     },[markAttendanceState]) 
     const markAttendance = () => {
-        const today = new Date().toISOString().split('T')[0];
+        const today = new Date().toISOString();
         axios.post('members/markattendance',{
             member:props.member.id,
             date:today

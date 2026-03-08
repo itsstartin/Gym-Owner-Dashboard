@@ -53,9 +53,9 @@ function ReportsMenuContent() {
           lg:grid-cols-3
           gap-4
           '>
-              <StatsCard icon={DollarSign} title='Total Revenue' num={`₹${calcData.total_revenue}`}/>
-              <StatsCard icon={Users} title='Avg. Daily Attendance'/>
-              <StatsCard icon={TrendingUp} title='Member Retention'/>
+            <StatsCard icon={DollarSign} title='Total Revenue' num={`₹${calcData.total_revenue || 0}`}/>
+            <StatsCard icon={Users} title='Avg. Daily Attendance' num={calcData.month_att_avg || 0}/>
+            <StatsCard icon={TrendingUp} title='Member Retention'/>
           </div>
           <div className='
           grid

@@ -3,7 +3,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import api_view , permission_classes
 from rest_framework.response import Response
 from rest_framework import status
-from members.services.payment_calc import calc_revenue
+from members.services.payment_calc import calc_data
 from . models import Attendance, Member , MembershipPlan, RecentPayment
 from . serializer import AttendanceSerializer, UserSerializer ,MemberSerializer, RecentPaymentSerializer , MembershipPlanSerializer
 from datetime import date
@@ -44,8 +44,9 @@ def get_payments(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_calc(request):
-    data = calc_revenue(request.user)
+    data = calc_data(request.user)
     return Response(data)
+
 
 @api_view(['PATCH'])
 def update_member(request,id):
@@ -93,7 +94,7 @@ def delete_attendance(request,id):
     attendance = Attendance.objects.filter(
         user=request.user,
         member=id,
-        date=date.today()
+        date__date=date.today()
     )
     attendance.delete()
     return Response(status=status.HTTP_204_NO_CONTENT)
@@ -104,7 +105,7 @@ def get_attendance(request,id):
     attendance = Attendance.objects.filter(
         user=request.user,
         member=id,
-        date=date.today()
+        date__date=date.today()
     )
     serializer = AttendanceSerializer(attendance, many=True)
     return Response(serializer.data)

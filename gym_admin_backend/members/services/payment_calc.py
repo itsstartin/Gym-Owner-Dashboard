@@ -1,9 +1,9 @@
 from django.db.models import Count, Sum
-from members.models import Member, RecentPayment
+from members.models import Attendance, Member, RecentPayment
 from datetime import date
 
 
-def calc_revenue(user):
+def calc_data(user):
     payments = RecentPayment.objects.filter(user=user)
     total_payments_count = payments.aggregate(Count('id'))['id__count']
     total_revenue = payments.aggregate(Sum('amount'))['amount__sum']
@@ -34,14 +34,19 @@ def calc_revenue(user):
             advance_validity = current_validity - expected_validity
             advance_amount = advance_validity * plan_price
             total_advance_amount = total_advance_amount + advance_amount
-
+    attendances = Attendance.objects.filter(user=user,date__month=today.month,date__year=today.year)
+    month_att_count = attendances.aggregate(Count('id'))['id__count']
+    month_att_avg = month_att_count / today.day
     calc_data = {
         "payment_count":total_payments_count,
         "total_revenue": total_revenue,
         "month_revenue": monthly_revenue,
         "overdue_amount":total_due_amount,
         "advance_amount":total_advance_amount,
+        "month_att_avg":month_att_avg
     }
     return calc_data
+
+
 
 

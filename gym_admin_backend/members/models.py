@@ -60,7 +60,7 @@ class MembershipPlan(models.Model):
 class Attendance(models.Model):
     user = models.ForeignKey(User,on_delete=models.CASCADE)
     member=models.ForeignKey('Member',on_delete=models.CASCADE,related_name='attendance')
-    date = models.DateField(auto_now_add=True)
+    date = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f"{self.member.name} - {self.date}"

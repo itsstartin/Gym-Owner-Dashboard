@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import WelcomeHeader from '../components/WelcomeHeader'
 import IconDescBtn from '../components/IconDescBtn'
 import StatsCard from '../components/StatsCard'
@@ -6,9 +6,21 @@ import GraphCard from '../components/GraphCard'
 import { ChartLine, FileText, IndianRupee, Plus, UserCheck, Users } from 'lucide-react'
 import { useDispatch } from 'react-redux'
 import { addMemberOn } from '../features/currentPageSlice'
+import axios from '../axios'
 
 function DashboardContent() {
     const dispatch = useDispatch()
+    const [calcData,setCalcData]=useState({})
+    const [graphData,setGraphData]=useState({})
+    useEffect(()=>{
+        axios.get('members/getcalc').then((res)=>{
+            setCalcData(res.data)
+        })
+        axios.get('members/getgraph').then((res)=>{
+            setGraphData(res.data)
+            console.log(res.data)
+        })
+    },[])
   return (
     <div className='
     flex
@@ -45,23 +57,21 @@ function DashboardContent() {
         <div className='
         grid
         grid-cols-1
-        sm:grid-cols-2
-        lg:grid-cols-4
+        lg:grid-cols-3
         gap-4
         '>
-            <StatsCard icon={Users} title='Active Members'/>
-            <StatsCard icon={UserCheck} title='Trainers'/>
-            <StatsCard icon={IndianRupee} title='Revenue This Month'/>
-            <StatsCard icon={ChartLine} title="Today's Attendance"/>
+            <StatsCard icon={Users} title='Active Members' num={calcData.members_count || 0}/>
+            <StatsCard icon={IndianRupee} title='Revenue This Month' num={`₹${calcData.month_revenue || 0}`}/>
+            <StatsCard icon={ChartLine} title="Today's Attendance" num={calcData.today_att_count || 0}/>
         </div>
         <div className='
         grid
         grid-cols-1
-        md:grid-cols-2
+        lg:grid-cols-2
         gap-4
         '>
-            <GraphCard/>
-            <GraphCard/>
+            <GraphCard title='Revenue' obj={graphData.revenue} Bar/>
+            <GraphCard title='Weekly Attendance' obj={graphData.weekly_attendance}/>
         </div>
 
     </div>

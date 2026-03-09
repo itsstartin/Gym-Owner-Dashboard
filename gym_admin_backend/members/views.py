@@ -3,6 +3,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import api_view , permission_classes
 from rest_framework.response import Response
 from rest_framework import status
+from members.services.calc_graph import calc_graph
 from members.services.payment_calc import calc_data
 from . models import Attendance, Member , MembershipPlan, RecentPayment
 from . serializer import AttendanceSerializer, UserSerializer ,MemberSerializer, RecentPaymentSerializer , MembershipPlanSerializer
@@ -45,6 +46,12 @@ def get_payments(request):
 @permission_classes([IsAuthenticated])
 def get_calc(request):
     data = calc_data(request.user)
+    return Response(data)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_graph(request):
+    data = calc_graph(request.user)
     return Response(data)
 
 

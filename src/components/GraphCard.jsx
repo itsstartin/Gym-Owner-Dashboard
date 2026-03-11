@@ -14,38 +14,71 @@ function GraphCard(props) {
     rounded-[8px]
     text-white
     '>
-      {props.obj ?
+      {
+      props.obj ?
         <div className='
         flex
         justify-center
         items-center
+        w-full
+        h-70
         '>
-          {props.Bar ? 
-          <Bar 
-          data={{
-            labels:props.obj.labels,
-            datasets:[
-              {
-                label:props.title,
-                data:props.obj.data
-              },
-                 
-            ]     
-          }
-          }></Bar>
+        {
+          props.Datasets ?
+            props.Bar ? 
+              <Bar 
+              data={{
+                labels:props.obj.labels,
+                datasets:props.obj.datasets.map((obj)=>({ 
+                      label:obj.name,
+                      data:obj.data
+                }))
+              }
+              }
+              >
+              </Bar>
+            :
+              <Line 
+              data={{
+                labels:props.obj.labels,
+                datasets:props.obj.datasets.map((obj)=>({ 
+                      label:obj.name,
+                      data:obj.data                      
+                }))
+              }
+              }>
+              </Line>
           :
-          <Line 
-          data={{
-            labels:props.obj.labels,
-            datasets:[
-              {
-                label:props.title,
-                data:props.obj.data
-              },
-            ]        
-          }
-          }></Line>
-          }
+          
+
+            props.Bar ? 
+              <Bar 
+              data={{
+                labels:props.obj.labels,
+                datasets:[
+                  {
+                    label:props.title,
+                    data:props.obj.data
+                  },
+                  
+                ]     
+              }
+            }></Bar>
+            :
+            <Line 
+            data={{
+              labels:props.obj.labels,
+              datasets:[
+                {
+                  label:props.title,
+                  data:props.obj.data
+                },
+              ]        
+            
+            }}>
+            </Line>
+        
+        }
         </div>
       :
       <div className='

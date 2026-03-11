@@ -5,6 +5,7 @@ import IconDescBtn from '../components/IconDescBtn'
 import WelcomeHeader from '../components/WelcomeHeader'
 import { Calendar, DollarSign, Download, TrendingUp, Users } from 'lucide-react'
 import axios from '../axios'
+import ReportGraphs from '../components/ReportGraphs'
 
 function ReportsMenuContent() {
     const [calcData,setCalcData]=useState({})
@@ -57,15 +58,7 @@ function ReportsMenuContent() {
             <StatsCard icon={Users} title='Avg. Daily Attendance' num={calcData.month_att_avg || 0}/>
             <StatsCard icon={TrendingUp} title='Member Retention'/>
           </div>
-          <div className='
-          grid
-          grid-cols-1
-          md:grid-cols-2
-          gap-4
-          '>
-              <GraphCard/>
-              <GraphCard/>
-          </div>
+          <ReportGraphs/>
   
       </div>
     )

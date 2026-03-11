@@ -1,6 +1,6 @@
 from django.db.models import Count, Sum
 from members.models import Attendance, Member, RecentPayment
-from datetime import date
+from datetime import date , timedelta
 
 
 def calc_data(user):
@@ -44,42 +44,6 @@ def calc_monthly_revenue(user):
     monthly_revenue = payments_current_month.aggregate(Sum('amount'))['amount__sum']
     return monthly_revenue
 
-def calc_overdue_amount(user):
-    members = Member.objects.filter(user=user)
-    total_due_amount=0
-    for obj in members:
-        total_paid=obj.total_cash_paid
-        plan_price = obj.membership_plan.plan_price
-        current_validity=total_paid/plan_price
-        today=date.today()
-        start_date=obj.membership_start_date
-        expected_validity=(today.year - start_date.year) * 12 + (today.month - start_date.month)
-        if today.day < start_date.day:
-            expected_validity=expected_validity-1
-        if expected_validity > current_validity:
-            due_validity=expected_validity-current_validity
-            due_amount = due_validity * plan_price
-            total_due_amount=total_due_amount + due_amount
-    return total_due_amount
-
-def calc_advance_amount(user):
-    members = Member.objects.filter(user=user)
-    total_advance_amount=0
-    for obj in members:
-        total_paid=obj.total_cash_paid
-        plan_price = obj.membership_plan.plan_price
-        current_validity=total_paid/plan_price
-        today=date.today()
-        start_date=obj.membership_start_date
-        expected_validity=(today.year - start_date.year) * 12 + (today.month - start_date.month)
-        if today.day < start_date.day:
-            expected_validity=expected_validity-1
-        if expected_validity < current_validity:
-            advance_validity = current_validity - expected_validity
-            advance_amount = advance_validity * plan_price
-            total_advance_amount = total_advance_amount + advance_amount
-    return total_advance_amount
-
 def calc_month_att_avg(user):
     today = date.today()
     attendances = Attendance.objects.filter(user=user,date__month=today.month,date__year=today.year)
@@ -97,6 +61,43 @@ def calc_att_today(user):
     attendances = Attendance.objects.filter(user=user,date__date=today)
     today_att_count = attendances.aggregate(Count('id'))['id__count']
     return today_att_count
+
+def calc_overdue_amount(user):
+    members = Member.objects.filter(user=user)
+    total_due_amount=0
+    today=date.today()
+    for obj in members:
+        total_paid=obj.total_cash_paid
+        plan_price = obj.membership_plan.plan_price
+        current_validity=total_paid/plan_price
+        current_validity=int(current_validity * 30)
+        start_date=obj.membership_start_date
+        expected_validity_diff= today - start_date
+        expected_validity= expected_validity_diff.days
+        if expected_validity > current_validity:
+            due_validity=expected_validity-current_validity
+            due_amount = ( due_validity / 30 ) * plan_price
+            total_due_amount=total_due_amount + due_amount
+    return f"{total_due_amount:.2f}"
+
+def calc_advance_amount(user):
+    members = Member.objects.filter(user=user)
+    total_advance_amount=0
+    today=date.today()
+    for obj in members:
+        total_paid=obj.total_cash_paid
+        plan_price = obj.membership_plan.plan_price
+        current_validity=total_paid/plan_price
+        current_validity=int(current_validity * 30)
+        start_date=obj.membership_start_date
+        expected_validity_diff= today - start_date
+        expected_validity= expected_validity_diff.days
+        if expected_validity < current_validity:
+            advance_validity = current_validity - expected_validity
+            advance_amount = (advance_validity / 30 ) * plan_price
+            total_advance_amount = total_advance_amount + advance_amount
+    return f"{total_advance_amount:.2f}"
+
     
 
 

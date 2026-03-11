@@ -39,20 +39,20 @@ class MemberSerializer(serializers.ModelSerializer):
             'user': {'read_only': True}
         }
     def get_status(self, obj):
+        today=date.today()
         total_paid=obj.total_cash_paid
         plan_price=obj.membership_plan.plan_price
         current_validity=total_paid/plan_price
-        today=date.today()
+        current_validity=current_validity * 30
         start_date=obj.membership_start_date
-        expected_validity=(today.year - start_date.year) * 12 + (today.month - start_date.month)
-        if today.day < start_date.day:
-            expected_validity=expected_validity-1
-        if expected_validity < current_validity:
-            return "active"
-        elif 3 < (expected_validity - current_validity):
-            return "expired"
-        elif 0 < (expected_validity - current_validity) < 3 :
+        expected_validity_diff= today - start_date
+        expected_validity= expected_validity_diff.days
+        if 0 < (current_validity - expected_validity) < 4 :
             return "due"
+        elif expected_validity < current_validity:
+            return "active"
+        elif expected_validity > current_validity:
+            return "expired"
         return "active"
 
 class RecentPaymentSerializer(serializers.ModelSerializer):

@@ -62,7 +62,7 @@ function PaymentsMenuContent() {
           lg:grid-cols-4
           gap-4
           '>
-              <StatsCard icon={CircleAlert} title='Payments Due' num={`₹${calcData.overdue_amount || 0}`}/>
+              <StatsCard icon={CircleAlert} title='Payments Overdue' num={`₹${calcData.overdue_amount || 0}`}/>
               <StatsCard icon={CircleDollarSign} title='Total Revenue This Month' num={`₹${calcData.month_revenue || 0}`}/>
               <StatsCard icon={CircleCheckBig} title='Completed Payments' num={calcData.payment_count || 0}/>
               <StatsCard icon={Clock4} title="Payment in Advance" num={`₹${calcData.advance_amount || 0}`}/>

@@ -35,6 +35,10 @@ function GraphCard(props) {
                 }))
               }
               }
+              options={{
+                responsive: true,
+                maintainAspectRatio: false,
+              }}
               >
               </Bar>
             :
@@ -46,7 +50,12 @@ function GraphCard(props) {
                       data:obj.data                      
                 }))
               }
-              }>
+              }
+              options={{
+                responsive: true,
+                maintainAspectRatio: false,
+              }}
+              >
               </Line>
           :
           
@@ -63,20 +72,29 @@ function GraphCard(props) {
                   
                 ]     
               }
-            }></Bar>
+              }
+              options={{
+                responsive: true,
+                maintainAspectRatio: false,
+              }}
+              ></Bar>
             :
-            <Line 
-            data={{
-              labels:props.obj.labels,
-              datasets:[
-                {
-                  label:props.title,
-                  data:props.obj.data
-                },
-              ]        
-            
-            }}>
-            </Line>
+              <Line 
+              data={{
+                labels:props.obj.labels,
+                datasets:[
+                  {
+                    label:props.title,
+                    data:props.obj.data
+                  },
+                ]        
+              }}
+              options={{
+                responsive: true,
+                maintainAspectRatio: false,
+              }}
+              >
+              </Line>
         
         }
         </div>

@@ -3,7 +3,7 @@ import { useDispatch } from 'react-redux'
 import { sidebarOn } from '../features/sidebarSlice'
 import { Menu } from 'lucide-react'
 
-function WelcomeHeader() {
+function WelcomeHeader(props) {
   const dispatch = useDispatch()
   return (
     <div className='
@@ -21,8 +21,8 @@ function WelcomeHeader() {
         }>  
             <Menu/>
         </button>
-        <h1 className='text-3xl font-extrabold'>Welcome back, Admin</h1>
-        <p className='text-gray-400 text-[15px]'>Here is what is happening at gym today</p>
+        <h1 className='text-3xl font-extrabold'>{props.header ? props.header :'Welcome back, Admin'}</h1>
+        <p className='text-gray-400 text-[15px]'>{props.desc ? props.desc :'Here is what is happening at gym today'}</p>
     </div>
   )
 }

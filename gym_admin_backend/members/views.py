@@ -19,6 +19,16 @@ def register(request):
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
+def current_user(request):
+    user = request.user
+    data = {
+        "username":user.username,
+        "email":user.email
+    }
+    return Response(data)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def get_members(request):
     members = Member.objects.filter(user=request.user)
     serializer = MemberSerializer(members, many=True)

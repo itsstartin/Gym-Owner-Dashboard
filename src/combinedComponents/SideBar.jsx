@@ -3,7 +3,7 @@ import GymIcon from '../components/GymIcon'
 import IconDescBtn from '../components/IconDescBtn'
 import { useDispatch, useSelector } from 'react-redux'
 import { Bell, ChartColumn, CreditCard, LayoutDashboard,  LogOut,  Settings, Users } from 'lucide-react';
-import { dashboardOn, membersOn, paymentsOn, reportsOn, logoutOn } from '../features/currentPageSlice';
+import { dashboardOn, membersOn, paymentsOn, reportsOn, logoutOn, settingsOn } from '../features/currentPageSlice';
 
 function SideBar() {
   const sidebarState = useSelector((state)=>state.sidebarState.value)
@@ -52,7 +52,7 @@ function SideBar() {
         w-full
         '>
             <IconDescBtn sb icon={Bell} label='Notifications'/>
-            <IconDescBtn sb icon={Settings} label='Settings'/>
+            <IconDescBtn sb icon={Settings} label='Settings' onClick={()=>dispatch(settingsOn())}/>
             <IconDescBtn sb icon={LogOut} label='Logout' onClick={()=>dispatch(logoutOn())}/>
         </div>
 

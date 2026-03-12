@@ -12,6 +12,7 @@ import LoginComp from '../components/LoginComp'
 import SignUp from '../components/SignUp'
 import ProtectedRoute from '../features/ProtectedRoute'
 import LogoutBox from '../components/LogoutBox'
+import SettingsMenuContent from '../combinedComponents/SettingsMenuContent'
 
 
 function MainPage() {
@@ -54,6 +55,9 @@ function MainPage() {
               :
               currentPageState==='Reports' ?
               <ReportsMenuContent/>
+              :
+              currentPageState==='Settings' ?
+              <SettingsMenuContent/>
               :
               currentPageState==='logout' ?
               <>

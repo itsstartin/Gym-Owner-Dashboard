@@ -4,7 +4,7 @@ from rest_framework.decorators import api_view , permission_classes
 from rest_framework.response import Response
 from rest_framework import status
 from members.services.calc_graph import calc_graph
-from members.services.payment_calc import calc_data
+from members.services.payment_calc import calc_data, calc_member_overdue
 from . models import Attendance, Member , MembershipPlan, RecentPayment
 from . serializer import AttendanceSerializer, UserSerializer ,MemberSerializer, RecentPaymentSerializer , MembershipPlanSerializer
 from datetime import date
@@ -51,6 +51,24 @@ def get_payments(request):
     payments = RecentPayment.objects.all()
     serializer = RecentPaymentSerializer(payments, many=True)
     return Response(serializer.data)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_overdue_members(request):
+    members = Member.objects.filter(user=request.user)
+    overdue_list = []
+    for member in members:
+        data = calc_member_overdue(member)
+        if data["overdue_days"] > 0:
+            overdue_list.append({
+                "id": member.id,
+                "name": member.name,
+                "membership_plan": member.membership_plan.name,
+                "overdue_days": data["overdue_days"],
+                "overdue_amount": data["overdue_amount"],
+            })
+    overdue_list.sort(key=lambda x: x["overdue_days"], reverse=True)
+    return Response(overdue_list)
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])

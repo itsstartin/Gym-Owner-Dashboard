@@ -1,5 +1,5 @@
 from django.urls import path
-from . views import create_payment, current_user, delete_attendance, get_attendance, get_calc, get_graph, get_member, get_members, create_member, get_payments, get_plans, mark_attendance, update_member
+from . views import create_payment, current_user, delete_attendance, get_attendance, get_calc, get_graph, get_member, get_members, create_member, get_overdue_members, get_payments, get_plans, mark_attendance, update_member
 
 urlpatterns = [
     path('get', get_members , name='get_member'),
@@ -15,5 +15,5 @@ urlpatterns = [
     path('getcalc',get_calc,name="get_calculation"),
     path('getgraph',get_graph,name="get_graph"),
     path('user',current_user,name="current_user"),
-
+    path('overdue',get_overdue_members,name="get_overdue_members"),
 ]

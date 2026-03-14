@@ -8,16 +8,22 @@ import GraphCard from '../components/GraphCard'
 import { addPaymentOn } from '../features/currentPageSlice'
 import axios from '../axios'
 import PaymentCard from '../components/PaymentCard'
+import OverdueCard from '../components/OverdueCard'
 
 function PaymentsMenuContent() {
     const [recentPayments,setRecentPayments]=useState([])
     const [calcData,setCalcData]=useState({})
+    const [overdueMembers,setOverdueMembers]=useState([])
     useEffect(()=>{
         axios.get('members/getpayments').then((res)=>{
             setRecentPayments(res.data)
         })
         axios.get('members/getcalc').then((res)=>{
             setCalcData(res.data)
+        })
+        axios.get('members/overdue').then((res)=>{
+            setOverdueMembers(res.data)
+            console.log(res.data)
         })
     },[])
     // const handleMember = async(id)=>{
@@ -86,7 +92,19 @@ function PaymentsMenuContent() {
                 })}
 
               </div>
-              <GraphCard/>
+              <div className='flex flex-col gap-2'>
+                <div className='flex flex-col'>
+                    <h1>Overdue Payments</h1>
+                    <p>Members with outstanding payments</p>
+                </div>
+                {
+                overdueMembers.map((obj)=> {
+                //    const data = handleMember(obj.member)
+                //    console.log("the data is",data.name)
+                   return <OverdueCard obj={obj}/>
+                })}
+
+              </div>
           </div>
   
       </div>

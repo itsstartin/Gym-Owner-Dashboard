@@ -98,6 +98,26 @@ def calc_advance_amount(user):
             total_advance_amount = total_advance_amount + advance_amount
     return f"{total_advance_amount:.2f}"
 
+def calc_member_overdue(member):
+    today=date.today()
+    total_paid=member.total_cash_paid
+    plan_price = member.membership_plan.plan_price
+    current_validity=total_paid/plan_price
+    current_validity=int(current_validity * 30)
+    start_date=member.membership_start_date
+    expected_validity_diff= today - start_date
+    expected_validity= expected_validity_diff.days
+    overdue_validity = 0
+    overdue_amount = 0.0
+    if expected_validity > current_validity:
+        overdue_validity=expected_validity-current_validity
+        overdue_amount = ( overdue_validity / 30 ) * plan_price
+    return {
+        'overdue_days':overdue_validity,
+        'overdue_amount':f"{overdue_amount:.2f}"
+    }
+
+
     
 
 

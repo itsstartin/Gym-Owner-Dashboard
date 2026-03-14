@@ -1,3 +1,4 @@
+import uuid
 from django.db import models
 from django.core.validators import RegexValidator
 from django.contrib.auth.models import User
@@ -28,11 +29,8 @@ class Member(models.Model):
     total_cash_paid=models.FloatField(default=0.0,blank=True)
     created_at=models.DateTimeField(auto_now_add=True)
     membership_start_date=models.DateField()
-    # status = models.CharField(
-    #     max_length=20,
-    #     choices=MEMBER_STATUS_CHOICES,
-    #     default='active'
-    #     )
+    access_token = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
+
 
     def __str__(self) :
         return self.name

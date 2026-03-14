@@ -13,6 +13,7 @@ import SignUp from '../components/SignUp'
 import ProtectedRoute from '../features/ProtectedRoute'
 import LogoutBox from '../components/LogoutBox'
 import SettingsMenuContent from '../combinedComponents/SettingsMenuContent'
+import MemberAccess from '../combinedComponents/MemberAccess'
 
 
 function MainPage() {
@@ -26,6 +27,7 @@ function MainPage() {
     '>
       <Routes>
         <Route Component={SignUp} exact path='/'/>
+        <Route element={<MemberAccess/>} path='/memberaccess/:token'/>
         <Route element={<LoginComp/>} path='/login'/>
         <Route element={
           <ProtectedRoute>

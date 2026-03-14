@@ -4,6 +4,7 @@ from rest_framework.decorators import api_view , permission_classes
 from rest_framework.response import Response
 from rest_framework import status
 from members.services.calc_graph import calc_graph
+from members.services.member_access import send_member_link
 from members.services.payment_calc import calc_data, calc_member_overdue
 from . models import Attendance, Member , MembershipPlan, RecentPayment
 from . serializer import AttendanceSerializer, UserSerializer ,MemberSerializer, RecentPaymentSerializer , MembershipPlanSerializer
@@ -98,7 +99,8 @@ def update_member(request,id):
 def create_member(request):
     serializer = MemberSerializer(data=request.data)
     if serializer.is_valid():
-        serializer.save(user=request.user)
+        member = serializer.save(user=request.user)
+        send_member_link(member)
         return Response(serializer.data,status=status.HTTP_201_CREATED)
     return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
 
@@ -144,3 +146,16 @@ def get_attendance(request,id):
     )
     serializer = AttendanceSerializer(attendance, many=True)
     return Response(serializer.data)
+
+@api_view(['GET'])
+def member_access(request, token):
+    try:
+        member = Member.objects.get(access_token=token)
+    except Member.DoesNotExist:
+        return Response({"error": "Invalid link"}, status=404)
+    data = {
+        "member_name": member.name,
+        "member_id": member.id,
+        "member_phno":member.phone_number
+    }
+    return Response(data)

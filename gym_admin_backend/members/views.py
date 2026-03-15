@@ -119,7 +119,7 @@ def mark_attendance(request):
     serializer = AttendanceSerializer(data=request.data)
     if serializer.is_valid():
         member = serializer.validated_data['member']
-        if Attendance.objects.filter(user=request.user,member=member,date=date.today()).exists():
+        if Attendance.objects.filter(user=request.user,member=member,date__date=date.today()).exists():
             return Response({"msg":"Attendance already marked"},status=status.HTTP_400_BAD_REQUEST)
         serializer.save(user=request.user)
         return Response(serializer.data,status=status.HTTP_201_CREATED)
@@ -159,3 +159,28 @@ def member_access(request, token):
         "member_phno":member.phone_number
     }
     return Response(data)
+
+@api_view(['GET'])
+def member_access_get_attendance(request,token):
+    member = Member.objects.get(access_token=token)
+    attendance = Attendance.objects.filter(
+        member=member.id,
+        date__date=date.today()
+    )
+    serializer = AttendanceSerializer(attendance, many=True)
+    return Response(serializer.data)
+
+@api_view(['POST'])
+def member_access_mark_attendance(request,token):
+    member = Member.objects.get(access_token=token)
+    serializer = AttendanceSerializer(data={
+        "member":member.id,
+        "date":request.data["date"]
+    })
+    if serializer.is_valid():
+        member = serializer.validated_data['member']
+        if Attendance.objects.filter(user=member.user,member=member,date__date=date.today()).exists():
+            return Response({"msg":"Attendance already marked"},status=status.HTTP_400_BAD_REQUEST)
+        serializer.save(user=member.user)
+        return Response(serializer.data,status=status.HTTP_201_CREATED)
+    return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)

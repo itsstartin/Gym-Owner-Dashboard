@@ -1,16 +1,29 @@
 import React, { useEffect, useState } from 'react'
 import IconDescBtn from '../components/IconDescBtn'
-import { Plus } from 'lucide-react'
+import { Check, Plus } from 'lucide-react'
 import { useParams } from 'react-router-dom'
 import axios from '../axios_simple'
 
 function MemberAccess() {
     const {token} = useParams()
+    const [enabled, setEnabled] = useState(false);
     const [memberDetails,setMemberDetails] = useState()
+    const markAttendance = () => {
+        const today = new Date().toISOString();
+        axios.post(`members/member-access/${token}/markattendance`,{
+            date:today
+        })
+        setEnabled(true)
+    }
     useEffect(()=>{
         axios.get(`members/member-access/${token}`).then((res)=>{
             console.log(res.data)
             setMemberDetails(res.data)
+        })
+        axios.get(`members/member-access/${token}/getattendance`).then((res)=>{
+            res.data.length===0 ?
+            console.log(res.data) : 
+            setEnabled(true)
         })
     },[])
     return (
@@ -38,8 +51,9 @@ function MemberAccess() {
                 </div>
             </div>
             :""}
-            <IconDescBtn icon={Plus}  label='Mark Attendance'/>
-            <IconDescBtn icon={Plus} label='Add Payment'/>
+            <IconDescBtn icon={enabled ? Check : Plus}  label={enabled?'Attendance Marked for today':'Mark Attendance'}
+            onClick={()=>enabled?'':markAttendance()}
+            />
         </div>
   )
 }

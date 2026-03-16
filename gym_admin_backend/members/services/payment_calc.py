@@ -105,6 +105,7 @@ def calc_member_overdue(member):
     current_validity=total_paid/plan_price
     current_validity=int(current_validity * 30)
     start_date=member.membership_start_date
+    end_date=start_date + timedelta(days=current_validity)
     expected_validity_diff= today - start_date
     expected_validity= expected_validity_diff.days
     overdue_validity = 0
@@ -114,7 +115,8 @@ def calc_member_overdue(member):
         overdue_amount = ( overdue_validity / 30 ) * plan_price
     return {
         'overdue_days':overdue_validity,
-        'overdue_amount':f"{overdue_amount:.2f}"
+        'overdue_amount':f"{overdue_amount:.2f}",
+        'membership_end_date':end_date
     }
 
 

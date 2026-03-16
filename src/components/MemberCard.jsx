@@ -3,9 +3,12 @@ import MemberTag from './MemberTag'
 import axios from '../axios';
 import { useSelector } from 'react-redux';
 import Switch from '@mui/material/Switch';
+import MemberViewProfile from './MemberViewProfile';
+import { Eye, User} from 'lucide-react';
 
 function MemberCard(props) {
     const [enabled, setEnabled] = useState(false);
+    const [viewProfile,setViewProfile] = useState()
     const markAttendanceState = useSelector((state)=>state.markAttendanceState.value)
     useEffect(()=>{
         axios.get(`members/getattendance/${props.member.id}`).then((res)=>{
@@ -31,6 +34,7 @@ function MemberCard(props) {
         })
     }
   return (
+    <>
     <div className='
     flex
     flex-col
@@ -44,11 +48,8 @@ function MemberCard(props) {
         flex
         gap-2
         '>
-            <img className='
-            w-10
-            h-10
-            '>
-            </img>
+            
+            <User size={40}/>
             <div className='
             flex
             flex-col
@@ -110,16 +111,17 @@ function MemberCard(props) {
         bg-black
         gap-2
         rounded-[8px]
-        '>
-            <img className='
-            w-6
-            h-6
-            '>
-            </img>
+        '
+        onClick={()=>setViewProfile(props.member)}
+        >
+            <Eye/>
             <h1>View Profile</h1>
         </div>
-
     </div>
+    {viewProfile ? 
+    <MemberViewProfile viewProfile={viewProfile} setViewProfile={setViewProfile}/>
+    :''}
+    </>
   )
 }
 

@@ -1,6 +1,8 @@
 from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
 from rest_framework import serializers
+
+from members.services.payment_calc import calc_member_overdue
 from . models import Attendance, Member, RecentPayment, MembershipPlan
 from datetime import date
 
@@ -32,6 +34,9 @@ class MemberSerializer(serializers.ModelSerializer):
         required=False
     )
     status=serializers.SerializerMethodField()
+    membership_end_date=serializers.SerializerMethodField()
+    overdue_days=serializers.SerializerMethodField()
+    overdue_amount=serializers.SerializerMethodField()
     class Meta:
         model = Member
         fields = '__all__'
@@ -54,6 +59,15 @@ class MemberSerializer(serializers.ModelSerializer):
         elif expected_validity > current_validity:
             return "expired"
         return "active"
+    def get_membership_end_date(self,obj):
+        data=calc_member_overdue(obj)
+        return data["membership_end_date"]
+    def get_overdue_days(self,obj):
+        data=calc_member_overdue(obj)
+        return data["overdue_days"]
+    def get_overdue_amount(self,obj):
+        data=calc_member_overdue(obj)
+        return data["overdue_amount"]
 
 class RecentPaymentSerializer(serializers.ModelSerializer):
     class Meta:

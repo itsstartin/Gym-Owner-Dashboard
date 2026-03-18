@@ -62,7 +62,6 @@ MIDDLEWARE = [
 ROOT_URLCONF = 'gym_admin_backend.urls'
 
 CORS_ALLOWED_ORIGINS = [
-    # 'http://localhost:5173',
     "https://gym-hub-jet.vercel.app"
 ]
 

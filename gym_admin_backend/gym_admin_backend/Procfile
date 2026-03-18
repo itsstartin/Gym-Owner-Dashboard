@@ -1,1 +1,1 @@
-web: gunicorn gym_hub.wsgi
+web: gunicorn gym_admin_backend.wsgi:application

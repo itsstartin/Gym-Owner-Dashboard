@@ -63,7 +63,7 @@ ROOT_URLCONF = 'gym_admin_backend.urls'
 
 CORS_ALLOWED_ORIGINS = [
     # 'http://localhost:5173',
-    "http://gym-hub.vercel.app"
+    "https://gym-hub-jet.vercel.app/"
 ]
 
 TEMPLATES = [

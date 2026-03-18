@@ -29,7 +29,7 @@ SECRET_KEY = os.getenv("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ["gym-hub.onrender.com"]
+ALLOWED_HOSTS = ["gym-hub-sdo6.onrender.com"]
 
 
 # Application definition

@@ -4,7 +4,7 @@ from rest_framework.decorators import api_view , permission_classes
 from rest_framework.response import Response
 from rest_framework import status
 from members.services.calc_graph import calc_graph
-from members.services.member_access import send_member_link
+from members.services.member_access import send_mail_overdue_member, send_member_link
 from members.services.payment_calc import calc_data, calc_member_overdue
 from . models import Attendance, Member , MembershipPlan, RecentPayment
 from . serializer import AttendanceSerializer, UserSerializer ,MemberSerializer, RecentPaymentSerializer , MembershipPlanSerializer
@@ -67,6 +67,7 @@ def get_overdue_members(request):
                 "membership_plan": member.membership_plan.name,
                 "overdue_days": data["overdue_days"],
                 "overdue_amount": data["overdue_amount"],
+                "membership_end_date":data["membership_end_date"]
             })
     overdue_list.sort(key=lambda x: x["overdue_days"], reverse=True)
     return Response(overdue_list)
@@ -100,7 +101,6 @@ def create_member(request):
     serializer = MemberSerializer(data=request.data)
     if serializer.is_valid():
         member = serializer.save(user=request.user)
-        send_member_link(member)
         return Response(serializer.data,status=status.HTTP_201_CREATED)
     return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
 
@@ -184,3 +184,24 @@ def member_access_mark_attendance(request,token):
         serializer.save(user=member.user)
         return Response(serializer.data,status=status.HTTP_201_CREATED)
     return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def notify_overdue_member(request):
+    data=request.data
+    send_mail_overdue_member(data)
+    return Response({"msg":"Notified the Overdue Member"},status=status.HTTP_200_OK)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def send_attendance_mail_member(request):
+    data=request.data
+    if data["member_id"]=='all':
+        members=Member.objects.filter(user=request.user)
+        for member in members:
+            send_member_link(member)
+        return Response({"msg":"Attendance Link Successfully Sented for All Members"},status=status.HTTP_200_OK)
+    member=Member.objects.get(id=data["member_id"])
+    send_member_link(member)
+    return Response({"msg":f"Attendance Link Successfully Sented for {member.name}"},status=status.HTTP_200_OK)
+

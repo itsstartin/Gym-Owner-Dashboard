@@ -9,6 +9,7 @@ from members.services.payment_calc import calc_data, calc_member_overdue
 from . models import Attendance, Member , MembershipPlan, RecentPayment
 from . serializer import AttendanceSerializer, UserSerializer ,MemberSerializer, RecentPaymentSerializer , MembershipPlanSerializer
 from datetime import date
+import threading
 
 @api_view(['POST'])
 def register(request):
@@ -189,7 +190,11 @@ def member_access_mark_attendance(request,token):
 @permission_classes([IsAuthenticated])
 def notify_overdue_member(request):
     data=request.data
-    send_mail_overdue_member(data)
+    thread = threading.Thread(
+        target = send_mail_overdue_member,
+        args=(data,)
+    )
+    thread.start()
     return Response({"msg":"Notified the Overdue Member"},status=status.HTTP_200_OK)
 
 @api_view(['POST'])

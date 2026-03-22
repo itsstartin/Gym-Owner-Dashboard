@@ -37,6 +37,8 @@ function PaymentsMenuContent() {
       flex-col
       w-full
       gap-4
+      min-h-screen
+      max-h-fit
       p-3
       sm:p-6
       '>

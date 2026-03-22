@@ -20,12 +20,17 @@ function DashboardContent() {
             setGraphData(res.data)
             console.log(res.data)
         })
+        axios.get('members/addnotification').then((res)=>{
+            console.log(res.data)
+        })
     },[])
   return (
     <div className='
     flex
     flex-col
     w-full
+    min-h-screen
+    max-h-fit
     gap-4
     p-3
     sm:p-6
@@ -45,11 +50,9 @@ function DashboardContent() {
                 <div className='
                 grid
                 grid-cols-1
-                lg:grid-cols-2
                 gap-2
                 '>
                 <IconDescBtn icon={Plus} label='Add Member' onClick={()=>dispatch(addMemberOn())}/>
-                <IconDescBtn icon={FileText} label='View Reports'/>
                 </div>
             </div>
 

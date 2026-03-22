@@ -20,32 +20,19 @@ function ReportsMenuContent() {
       flex
       flex-col
       w-full
+      min-h-screen
+      max-h-fit
       gap-4
       p-3
       sm:p-6
       '>
           <div className='
           grid
-          grid-cols-2
+          grid-cols-1
   
           '>
               <WelcomeHeader/>
-              <div className='
-              col-span-1
-              flex
-              justify-end
-              items-center
-              '>
-                  <div className='
-                  grid
-                  grid-cols-1
-                  lg:grid-cols-2
-                  gap-2
-                  '>
-                  <IconDescBtn icon={Calendar} label='This Year'/>
-                  <IconDescBtn icon={Download} label='Download Report'/>
-                  </div>
-              </div>
+              
   
           </div>
           <div className='

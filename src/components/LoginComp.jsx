@@ -51,7 +51,7 @@ const LoginComp = () => {
         rounded-[8px]
         '/>
           <h1 className="text-2xl font-semibold text-white">GymPro Connect</h1>
-          <p className="text-zinc-400 text-sm">Create Admin Account</p>
+          <p className="text-zinc-400 text-sm">Login into the Admin Account</p>
         </div>
 
         {/* Form */}
@@ -63,7 +63,7 @@ const LoginComp = () => {
             <input
               type="text"
               name="username"
-              placeholder="salimrash"
+              placeholder="salim"
               value={form.username}
               onChange={handleChange}
               className="w-full mt-1 px-3 py-2 rounded-lg bg-zinc-800 border border-zinc-700 text-white focus:outline-none focus:ring-2 focus:ring-green-600"
@@ -76,7 +76,7 @@ const LoginComp = () => {
             <input
               type="password"
               name="password"
-              placeholder="******"
+              placeholder="123"
               value={form.password}
               onChange={handleChange}
               className="w-full mt-1 px-3 py-2 rounded-lg bg-zinc-800 border border-zinc-700 text-white focus:outline-none focus:ring-2 focus:ring-green-600"

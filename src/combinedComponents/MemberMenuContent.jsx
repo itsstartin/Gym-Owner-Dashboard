@@ -33,7 +33,8 @@ function MemberMenuContent() {
     flex
     flex-col 
     w-full
-    h-full
+    min-h-screen
+    max-h-fit
     gap-4
     p-3
     sm:p-6

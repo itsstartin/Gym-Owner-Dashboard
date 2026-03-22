@@ -14,6 +14,7 @@ import ProtectedRoute from '../features/ProtectedRoute'
 import LogoutBox from '../components/LogoutBox'
 import SettingsMenuContent from '../combinedComponents/SettingsMenuContent'
 import MemberAccess from '../combinedComponents/MemberAccess'
+import NotificationMenuContent from '../combinedComponents/NotificationMenuContent'
 
 
 function MainPage() {
@@ -57,6 +58,9 @@ function MainPage() {
               :
               currentPageState==='Reports' ?
               <ReportsMenuContent/>
+              :
+              currentPageState==='Notifications' ?
+              <NotificationMenuContent/>
               :
               currentPageState==='Settings' ?
               <SettingsMenuContent/>

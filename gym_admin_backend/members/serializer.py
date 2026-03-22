@@ -3,7 +3,7 @@ from django.contrib.auth.password_validation import validate_password
 from rest_framework import serializers
 
 from members.services.payment_calc import calc_member_overdue
-from . models import Attendance, Member, RecentPayment, MembershipPlan
+from . models import Attendance, Member, Notification, RecentPayment, MembershipPlan
 from datetime import date
 
 class UserSerializer(serializers.ModelSerializer):
@@ -81,6 +81,14 @@ class AttendanceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Attendance
         fields = ['member','date']
+        extra_kwargs = {
+            'user': {'read_only': True}
+        }
+
+class NotificationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Notification
+        fields = '__all__'
         extra_kwargs = {
             'user': {'read_only': True}
         }

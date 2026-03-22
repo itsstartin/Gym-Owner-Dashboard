@@ -26,7 +26,7 @@ function MemberSearchBar({filterValue, setFilterValue}) {
     '>
         <div className='flex w-full outline-1 outline-gray-700 rounded-[8px] p-1'>
 
-          <Search/>
+          <Search size={20}/>
           <input
           value={filterValue.search}
           name='search'
@@ -43,7 +43,7 @@ function MemberSearchBar({filterValue, setFilterValue}) {
         gap-2
         bg-gray-900 outline-1 outline-gray-700 rounded-[8px] p-1
         '>
-            <Funnel/>
+            <Funnel size={20} className='hidden lg:flex'/>
             <select value={filterValue.status} name='status' className='bg-gray-900 outline-none' onChange={handleChange}>
                 <option value=''>All Status</option>
                 <option value='active'>Active</option>

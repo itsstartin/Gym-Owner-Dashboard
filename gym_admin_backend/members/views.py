@@ -1,13 +1,16 @@
 from django.contrib.auth.models import User
+from django.core.validators import validate_email
+from django.core.exceptions import ValidationError
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import api_view , permission_classes
 from rest_framework.response import Response
 from rest_framework import status
 from members.services.calc_graph import calc_graph
 from members.services.member_access import send_mail_overdue_member, send_member_link
+from members.services.notification_service import check_expired_members, check_inactive_members
 from members.services.payment_calc import calc_data, calc_member_overdue
-from . models import Attendance, Member , MembershipPlan, RecentPayment
-from . serializer import AttendanceSerializer, UserSerializer ,MemberSerializer, RecentPaymentSerializer , MembershipPlanSerializer
+from . models import Attendance, Member , MembershipPlan, Notification, RecentPayment
+from . serializer import AttendanceSerializer, NotificationSerializer, UserSerializer ,MemberSerializer, RecentPaymentSerializer , MembershipPlanSerializer
 from datetime import date
 import threading
 
@@ -50,7 +53,7 @@ def get_plans(request):
 
 @api_view(['GET'])
 def get_payments(request):
-    payments = RecentPayment.objects.all()
+    payments = RecentPayment.objects.filter(user=request.user)
     serializer = RecentPaymentSerializer(payments, many=True)
     return Response(serializer.data)
 
@@ -210,3 +213,48 @@ def send_attendance_mail_member(request):
     send_member_link(member)
     return Response({"msg":f"Attendance Link Successfully Sented for {member.name}"},status=status.HTTP_200_OK)
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def add_notification(request):
+    check_inactive_members(request.user)
+    check_expired_members(request.user)
+    return Response({"msg":"notification processed"})
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_notifications(request):
+    notifications = Notification.objects.filter(user=request.user).order_by('-created_at')
+    serializer=NotificationSerializer(notifications,many=True)
+    return Response(serializer.data,status=status.HTTP_200_OK)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def mark_notification_read(request,pk):
+    try:
+        notification = Notification.objects.get(user=request.user,id=pk)
+        notification.is_read=True
+        notification.save()
+        return Response({"msg":"Notification marked as read"},status=status.HTTP_200_OK)
+    except Notification.DoesNotExist:
+        return Response({"error":"Notificatin not found"},status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def update_user_email(request):
+    new_email = request.data.get("email")
+    if not new_email:
+        return Response({"error":"Email is required"},status=400)
+    new_email = new_email.strip()
+    try:
+        validate_email(new_email)
+    except ValidationError:
+        return Response({"error":"Invalid email format"},status=400)
+    if User.objects.filter(email=new_email).exists():
+        return Response({"error":"Email already in use"},status=400)
+    user=request.user
+    user.email=new_email
+    user.save()
+    return Response({
+        "msg":"Email updated successfully",
+        "email":user.email
+    })

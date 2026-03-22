@@ -11,12 +11,14 @@ function SettingsMenuContent() {
     axios.get('members/user').then((res)=>{
       setUserDetails(res.data)
     })
-  },[])
+  },[currentSettingsPage])
   return (
     <div className='
     flex
     flex-col
     w-full
+    min-h-screen
+    max-h-fit
     gap-6
     p-3
     sm:p-6
@@ -35,10 +37,10 @@ function SettingsMenuContent() {
         <div className='flex
         flex-col
         w-full
-        gap-8'
+        gap-2'
         >
           <SettingsPersonalDetailsCard title='Username' desc={userDetails.username}/>
-          <SettingsPersonalDetailsCard title='Email' desc={userDetails.email}/>
+          <SettingsPersonalDetailsCard title='Email' desc={userDetails.email} edit/>
         </div>
         :
         <SettingsMemberSection/>

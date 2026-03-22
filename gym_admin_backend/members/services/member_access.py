@@ -9,7 +9,7 @@ load_dotenv()
 
 def send_member_link(member):
     link_header=os.getenv("CORS_ALLOWED_ORIGINS")
-    link = f"{link_header}/member-access/{member.access_token}"
+    link = f"{link_header}/memberaccess/{member.access_token}"
     url = "https://api.brevo.com/v3/smtp/email"
     headers = {
         "accept":"application/json",

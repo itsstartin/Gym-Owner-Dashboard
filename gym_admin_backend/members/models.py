@@ -46,7 +46,18 @@ class RecentPayment(models.Model):
         default='cash',
         )
     created_at=models.DateTimeField(auto_now_add=True,null=True)
-    
+
+class Notification(models.Model):
+    user = models.ForeignKey(User,on_delete=models.CASCADE)
+    member=models.ForeignKey('Member',on_delete=models.CASCADE, null=True, blank=True)
+    type=models.CharField(max_length=50)
+    message = models.TextField()
+    is_read=models.BooleanField(default=False)
+    created_at=models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.message
+
 
 class MembershipPlan(models.Model):
     name=models.CharField(max_length=20,unique=True)  # e.g., 'Basic', 'VIP', 'Premium'

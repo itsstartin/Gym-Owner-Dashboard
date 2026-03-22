@@ -37,6 +37,8 @@ function MemberAccess() {
         text-white
         inset-0
         w-full
+        min-h-screen
+        max-h-fit
         gap-4
         '>
             {memberDetails?

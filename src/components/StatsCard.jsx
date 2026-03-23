@@ -13,6 +13,9 @@ function StatsCard(props) {
     bg-gray-900
     text-white
     p-5
+    outline-1
+    outline-gray-800
+    hover:outline-green-900
     '>
         {!Icon ?
         <>

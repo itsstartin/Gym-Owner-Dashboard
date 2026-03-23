@@ -43,6 +43,9 @@ function MemberCard(props) {
     rounded-[8px]
     gap-2
     p-2
+    outline-1
+    outline-gray-800
+    hover:outline-green-900
     '>
         <div className='
         flex
@@ -111,6 +114,7 @@ function MemberCard(props) {
         bg-black
         gap-2
         rounded-[8px]
+        hover:outline-1
         '
         onClick={()=>setViewProfile(props.member)}
         >

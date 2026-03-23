@@ -17,7 +17,7 @@ function IconDescBtn(props) {
     rounded-[8px]
     justify-start
     items-center
-    ${props.sb && props.label!==currentPageState ? '' : 'bg-green-800'}
+    ${props.sb && props.label!==currentPageState ? 'hover:bg-gray-800' : 'bg-green-800 hover:bg-green-900'}
     text-[14px]
     font-bold
     text-white

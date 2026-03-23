@@ -24,15 +24,22 @@ function ReportGraphs() {
                 ` bg-green-800
             text-center
             w-full
-            rounded-[8px]`
-            :'w-full text-center'
+            rounded-md
+            outline-1
+            outline-green-800
+          hover:outline-green-900 `
+            :
+            ' w-full text-center rounded-md hover:bg-gray-800'
             }>Revenue</h1>
             <h1 onClick={()=>setGraphState('Att')} className={graphState==='Att'?
                 ` bg-green-800
             text-center
             w-full
-            rounded-[8px]`
-            :'w-full text-center'
+            rounded-md
+            outline-1
+            outline-green-800
+          hover:outline-green-900 `
+            :'w-full text-center rounded-md hover:bg-gray-800'
             }>Attendance</h1>
         </div>
         {graphState === 'Rev'?

@@ -19,6 +19,8 @@ function MemberViewProfile({viewProfile, setViewProfile}) {
     rounded-[8px]
     gap-2
     p-2
+    outline-1
+    outline-gray-800
     '>
         <div className='
         flex

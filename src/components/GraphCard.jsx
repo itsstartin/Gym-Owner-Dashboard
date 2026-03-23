@@ -13,6 +13,9 @@ function GraphCard(props) {
     bg-gray-900
     rounded-[8px]
     text-white
+    outline-1
+    outline-gray-800
+    hover:outline-green-900
     '>
       {
       props.obj ?

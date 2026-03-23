@@ -81,7 +81,10 @@ function PaymentsMenuContent() {
           md:grid-cols-2
           gap-4
           '>
-              <div className='flex flex-col gap-2'>
+              <div className='flex flex-col gap-2
+              outline-1
+            outline-gray-800
+            p-2 rounded-lg'>
                 <div className='flex flex-col'>
                     <h1>Recent Transactions</h1>
                     <p>Latest payment transactions from members</p>
@@ -94,7 +97,10 @@ function PaymentsMenuContent() {
                 })}
 
               </div>
-              <div className='flex flex-col gap-2'>
+              <div className='flex flex-col gap-2 
+              outline-1
+            outline-gray-800
+            p-2 rounded-lg'>
                 <div className='flex flex-col'>
                     <h1>Overdue Payments</h1>
                     <p>Members with outstanding payments</p>

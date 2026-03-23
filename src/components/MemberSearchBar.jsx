@@ -22,6 +22,7 @@ function MemberSearchBar({filterValue, setFilterValue}) {
     p-4
     outline-1
     outline-gray-800
+    hover:outline-green-900
     
     '>
         <div className='flex w-full outline-1 outline-gray-700 rounded-[8px] p-1'>

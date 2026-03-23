@@ -12,7 +12,10 @@ function PaymentCard(props) {
     })
   },[])
   return (
-    <div className="flex flex-col outline-1 outline-gray-700 rounded-[8px] p-2 bg-gray-900">
+    <div className="flex flex-col   rounded-[8px] p-2 bg-gray-900
+    outline-1
+    outline-gray-800
+    hover:outline-green-800">
         <div className='flex justify-between'>
             <h1>{memberData.name}</h1>
             <p>₹ {props.data.amount}</p>

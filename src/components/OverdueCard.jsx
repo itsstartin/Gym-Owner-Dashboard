@@ -17,7 +17,10 @@ function OverdueCard(props) {
     }
   }
   return (
-    <div className="flex flex-col outline-1 outline-gray-700 rounded-[8px] p-2 bg-gray-900 gap-2">
+    <div className="
+    flex flex-col rounded-[8px] p-2 bg-gray-900 gap-2 outline-1
+    outline-red-800
+    hover:outline-red-500">
         <div className='flex justify-between'>
             <h1>{props.obj.name}</h1>
             <p>₹ {props.obj.overdue_amount}</p>

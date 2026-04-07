@@ -44,7 +44,7 @@ function MemberMenuContent() {
           grid-cols-2
   
           '>
-              <WelcomeHeader/>
+              <WelcomeHeader header="Member Management" desc="Manage your members and their details" />
               <div className='
               col-span-1
               flex

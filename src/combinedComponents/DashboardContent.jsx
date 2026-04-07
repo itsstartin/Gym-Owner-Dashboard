@@ -12,6 +12,8 @@ function DashboardContent() {
     const dispatch = useDispatch()
     const [calcData,setCalcData]=useState({})
     const [graphData,setGraphData]=useState({})
+    const [percentDiffData,setPercentDiffData]=useState({})
+    const [userDetails,setUserDetails]=useState({})
     useEffect(()=>{
         axios.get('members/getcalc').then((res)=>{
             setCalcData(res.data)
@@ -23,6 +25,13 @@ function DashboardContent() {
         axios.get('members/addnotification').then((res)=>{
             console.log(res.data)
         })
+        axios.get('members/getpercentstatdiff').then((res)=>{
+            setPercentDiffData(res.data)
+            console.log(res.data)
+        })
+        axios.get('members/user').then((res)=>{
+            setUserDetails(res.data)
+          })
     },[])
   return (
     <div className='
@@ -40,7 +49,7 @@ function DashboardContent() {
         grid-cols-2
 
         '>
-            <WelcomeHeader/>
+            <WelcomeHeader header={`Welcome back, ${userDetails.username || 'Admin'}`} desc="Here is what is happening at gym today" />
             <div className='
             col-span-1
             flex
@@ -64,8 +73,8 @@ function DashboardContent() {
         gap-4
         '>
             <StatsCard icon={Users} title='Active Members' num={calcData.members_count || 0}/>
-            <StatsCard icon={IndianRupee} title='Revenue This Month' num={`₹${calcData.month_revenue || 0}`}/>
-            <StatsCard icon={ChartLine} title="Today's Attendance" num={calcData.today_att_count || 0}/>
+            <StatsCard icon={IndianRupee} title='Revenue This Month' num={`₹${calcData.month_revenue || 0}`} percentDiff={percentDiffData.month_revenue_percent_diff || 0} percentFrom='last month'/>
+            <StatsCard icon={ChartLine} title="Today's Attendance" num={calcData.today_att_count || 0} percentDiff={percentDiffData.today_att_percent_diff || 0} percentFrom='yesterday'/>
         </div>
         <div className='
         grid

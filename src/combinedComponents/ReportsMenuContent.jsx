@@ -31,19 +31,18 @@ function ReportsMenuContent() {
           grid-cols-1
   
           '>
-              <WelcomeHeader/>
+              <WelcomeHeader header="Reports & Analytics" desc="Comprehensive insights into your gym's performance" />
               
   
           </div>
           <div className='
           grid
           grid-cols-1
-          lg:grid-cols-3
+          lg:grid-cols-2
           gap-4
           '>
             <StatsCard icon={DollarSign} title='Total Revenue' num={`₹${calcData.total_revenue || 0}`}/>
             <StatsCard icon={Users} title='Avg. Daily Attendance' num={calcData.month_att_avg || 0}/>
-            <StatsCard icon={TrendingUp} title='Member Retention'/>
           </div>
           <ReportGraphs/>
   

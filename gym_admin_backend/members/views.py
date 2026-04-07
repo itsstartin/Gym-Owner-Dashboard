@@ -6,6 +6,7 @@ from rest_framework.decorators import api_view , permission_classes
 from rest_framework.response import Response
 from rest_framework import status
 from members.services.calc_graph import calc_graph
+from members.services.percent_stat_diff import calc_percent_diff_data
 from members.services.member_access import send_mail_overdue_member, send_member_link
 from members.services.notification_service import check_expired_members, check_inactive_members
 from members.services.payment_calc import calc_data, calc_member_overdue
@@ -258,3 +259,9 @@ def update_user_email(request):
         "msg":"Email updated successfully",
         "email":user.email
     })
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_percent_stat_diff(request):
+    data = calc_percent_diff_data(request.user)
+    return Response(data,status=status.HTTP_200_OK)

@@ -14,6 +14,7 @@ function PaymentsMenuContent() {
     const [recentPayments,setRecentPayments]=useState([])
     const [calcData,setCalcData]=useState({})
     const [overdueMembers,setOverdueMembers]=useState([])
+    const [percentDiffData,setPercentDiffData]=useState({})
     useEffect(()=>{
         axios.get('members/getpayments').then((res)=>{
             setRecentPayments(res.data)
@@ -23,6 +24,10 @@ function PaymentsMenuContent() {
         })
         axios.get('members/overdue').then((res)=>{
             setOverdueMembers(res.data)
+            console.log(res.data)
+        })
+        axios.get('members/getpercentstatdiff').then((res)=>{
+            setPercentDiffData(res.data)
             console.log(res.data)
         })
     },[])
@@ -47,7 +52,7 @@ function PaymentsMenuContent() {
           grid-cols-2
   
           '>
-              <WelcomeHeader/>
+              <WelcomeHeader header="Payments" desc="Track and manage member payments" />
               <div className='
               col-span-1
               flex
@@ -71,7 +76,7 @@ function PaymentsMenuContent() {
           gap-4
           '>
               <StatsCard icon={CircleAlert} title='Payments Overdue' num={`₹${calcData.overdue_amount || 0}`}/>
-              <StatsCard icon={CircleDollarSign} title='Total Revenue This Month' num={`₹${calcData.month_revenue || 0}`}/>
+              <StatsCard icon={CircleDollarSign} title='Total Revenue This Month' num={`₹${calcData.month_revenue || 0}`} percentDiff={percentDiffData.month_revenue_percent_diff || 0} percentFrom='last month'/>
               <StatsCard icon={CircleCheckBig} title='Completed Payments' num={calcData.payment_count || 0}/>
               <StatsCard icon={Clock4} title="Payment in Advance" num={`₹${calcData.advance_amount || 0}`}/>
           </div>

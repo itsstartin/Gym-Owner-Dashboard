@@ -2,8 +2,10 @@ import { Dumbbell } from "lucide-react";
 import React, { useState } from "react";
 import axios from '../axios_simple'
 import {useNavigate} from 'react-router-dom'
+import {ClipLoader} from 'react-spinners'
 
 const LoginComp = () => {
+  const [isLoading,setIsLoading]=useState(false)
   const navigate = useNavigate()
   const [form, setForm] = useState({
     username: "",
@@ -19,12 +21,12 @@ const LoginComp = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsLoading(true)
     console.log(form);
     // call your signup API here
     try{
       await axios.post('login/',form).then((res)=>{
         localStorage.setItem("token",res.data.access)
-        alert("User Logined")
         setForm({
           username: "",
           password: "",
@@ -33,6 +35,9 @@ const LoginComp = () => {
       })
     }catch(error){
       alert(error)
+    }
+    finally{
+      setIsLoading(false)
     }
   };
 
@@ -88,7 +93,16 @@ const LoginComp = () => {
             type="submit"
             className="w-full bg-green-600 hover:bg-green-700 transition py-2 rounded-lg text-white font-semibold mt-2"
           >
-            Login
+            {isLoading ? 
+            
+            <div className="flex items-center gap-2 justify-center">
+            <ClipLoader color="white" size={20} />
+            <p>Starting Server... This may take a few seconds.</p>
+            </div>
+            
+            :
+            "Login"
+            }
           </button>
         </form>
 

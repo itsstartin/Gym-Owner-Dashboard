@@ -40,8 +40,10 @@ function StatsCard(props) {
         align-start
         '>
             <h1 className='text-3xl font-extrabold'>{props.num}</h1>
-            <p className='text-[12px]'>+12% from last month</p>
-
+            <div className='flex items-center justify-start gap-1'>
+                <p className={`text-[12px] ${props.percentDiff ? props.percentDiff > 0 ? 'text-green-500' : 'text-red-500' : ''}`}>{props.percentDiff ? `${props.percentDiff > 0 ? '+' : ''}${props.percentDiff}%` : ''}</p>
+                <p className='text-[12px]'>{props.percentDiff ? ` from ${props.percentFrom}` : ''}</p>
+            </div>
         </div>
 
         </>
@@ -68,8 +70,10 @@ function StatsCard(props) {
         align-start
         '>
             <h1 className='text-3xl font-extrabold'>{props.num ? props.num:'0'}</h1>
-            <p className='text-[12px]'>+12% from last month</p>
-
+            <div className='flex items-center justify-start gap-1'>
+                <p className={`text-[12px] ${props.percentDiff ? props.percentDiff > 0 ? 'text-green-500' : 'text-red-500' : ''}`}>{props.percentDiff ? `${props.percentDiff > 0 ? '+' : ''}${props.percentDiff}%` : ''}</p>
+                <p className='text-[12px]'>{props.percentDiff ? ` from ${props.percentFrom}` : ''}</p>
+            </div>
         </div>
         </>}
     </div>

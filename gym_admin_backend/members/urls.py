@@ -1,5 +1,5 @@
 from django.urls import path
-from . views import add_notification, create_payment, current_user, delete_attendance, get_attendance, get_calc, get_graph, get_member, get_members, create_member, get_notifications, get_overdue_members, get_payments, get_plans, mark_attendance, mark_notification_read, member_access, member_access_get_attendance, member_access_mark_attendance, notify_overdue_member, send_attendance_mail_member, update_member, update_user_email
+from . views import add_notification, create_payment, current_user, delete_attendance, get_attendance, get_calc, get_graph, get_member, get_members, create_member, get_notifications, get_overdue_members, get_payments, get_percent_stat_diff, get_plans, mark_attendance, mark_notification_read, member_access, member_access_get_attendance, member_access_mark_attendance, notify_overdue_member, send_attendance_mail_member, update_member, update_user_email
 
 urlpatterns = [
     path('get', get_members , name='get_member'),
@@ -25,4 +25,5 @@ urlpatterns = [
     path('getnotifications',get_notifications,name="get_notifications"),
     path('readnotification/<int:pk>',mark_notification_read,name="mark_notication_as_read"),
     path('update-user-email',update_user_email,name="update_user_email"),
+    path('getpercentstatdiff',get_percent_stat_diff,name="get_percent_stat_diff"),
 ]

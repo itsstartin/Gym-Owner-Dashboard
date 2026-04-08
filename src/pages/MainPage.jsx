@@ -27,9 +27,9 @@ function MainPage() {
     text-white
     '>
       <Routes>
-        <Route Component={SignUp} exact path='/'/>
+        <Route Component={SignUp} path='/signup'/>
         <Route element={<MemberAccess/>} path='/memberaccess/:token'/>
-        <Route element={<LoginComp/>} path='/login'/>
+        <Route element={<LoginComp/>} exact path='/'/>
         <Route element={
           <ProtectedRoute>
             <>

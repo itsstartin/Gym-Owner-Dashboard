@@ -32,7 +32,7 @@ function SignUp() {
           console.log(payload);
           const response = await axios.post('register/', payload)
           alert("User Created")
-          navigate('login/')
+          navigate('/')
           console.log("User Created and Saved",response.data)
           setForm({
             'username':"",
@@ -147,7 +147,7 @@ function SignUp() {
             <p className="text-center text-sm text-zinc-400 mt-6">
               Already have an account?{" "}
               <span className="text-green-500 hover:underline cursor-pointer"
-              onClick={()=>navigate('/login')}>
+              onClick={()=>navigate('/')}>
                 Login
               </span>
             </p>

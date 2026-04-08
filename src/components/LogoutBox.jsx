@@ -8,7 +8,7 @@ function LogoutBox() {
   const dispatch = useDispatch()
   const handleLogout = () => {
     localStorage.removeItem('token')
-    navigate('/login')
+    navigate('/')
   }
   return (
     <div className='

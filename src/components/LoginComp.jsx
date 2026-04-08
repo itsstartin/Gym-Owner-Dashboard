@@ -110,7 +110,7 @@ const LoginComp = () => {
         <p className="text-center text-sm text-zinc-400 mt-6">
           Don't have an account?{" "}
           <span className="text-green-500 hover:underline cursor-pointer"
-          onClick={()=>navigate('/')}
+          onClick={()=>navigate('/signup')}
           >
             Create
           </span>

@@ -83,8 +83,8 @@ function MemberMenuContent() {
             col-span-1
             flex
             flex-col
-            justify-center
-            items-center
+            justify-start
+            items-start
             gap-2
             '>
               <h1 className='text-white text-2xl font-bold'>No members found</h1>

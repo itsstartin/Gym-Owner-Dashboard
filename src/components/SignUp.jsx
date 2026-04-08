@@ -65,7 +65,7 @@ function SignUp() {
             bg-green-800
             rounded-[8px]
             '/>
-              <h1 className="text-2xl font-semibold text-white">GymPro Connect</h1>
+              <h1 className="text-2xl font-semibold text-white">GymHub Connect</h1>
               <p className="text-zinc-400 text-sm">Create Admin Account</p>
             </div>
     

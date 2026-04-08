@@ -2,7 +2,7 @@ import uuid
 from django.db import models
 from django.core.validators import RegexValidator
 from django.contrib.auth.models import User
-
+from django.utils import timezone
 phone_regex = RegexValidator(
     regex=r'^\+?\d{7,15}$',
     message="Phone number must be entered in the format: '+999999999'. Up to 15 digits allowed."
@@ -45,7 +45,7 @@ class RecentPayment(models.Model):
         choices=PAYMENT_TYPE_CHOICES,
         default='cash',
         )
-    created_at=models.DateTimeField(auto_now_add=True,null=True)
+    created_at=models.DateTimeField(default=timezone.now,null=True)
 
 class Notification(models.Model):
     user = models.ForeignKey(User,on_delete=models.CASCADE)
@@ -69,7 +69,7 @@ class MembershipPlan(models.Model):
 class Attendance(models.Model):
     user = models.ForeignKey(User,on_delete=models.CASCADE)
     member=models.ForeignKey('Member',on_delete=models.CASCADE,related_name='attendance')
-    date = models.DateTimeField(auto_now_add=True)
+    date = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
         return f"{self.member.name} - {self.date}"

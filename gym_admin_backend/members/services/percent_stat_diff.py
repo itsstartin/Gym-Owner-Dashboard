@@ -40,7 +40,7 @@ def calc_month_revenue_percent_diff(user):
     if totals[0] == 0:
         return 0
     month_revenue_percent_diff = ((totals[1] - totals[0]) / totals[0]) * 100
-    return month_revenue_percent_diff
+    return f"{month_revenue_percent_diff:.2f}"
 
 def calc_today_att_percent_diff(user):
     today = date.today()
@@ -52,4 +52,4 @@ def calc_today_att_percent_diff(user):
     if yesterday_att_count == 0:
         return 0
     today_att_percent_diff = ((today_att_count - yesterday_att_count) / yesterday_att_count) * 100
-    return today_att_percent_diff
+    return f"{today_att_percent_diff:.2f}"

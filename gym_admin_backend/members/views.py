@@ -1,6 +1,7 @@
 from django.contrib.auth.models import User
 from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
+from django.db.models.aggregates import Sum
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import api_view , permission_classes
 from rest_framework.response import Response
@@ -54,7 +55,7 @@ def get_plans(request):
 
 @api_view(['GET'])
 def get_payments(request):
-    payments = RecentPayment.objects.filter(user=request.user)
+    payments = RecentPayment.objects.filter(user=request.user).order_by('-created_at')
     serializer = RecentPaymentSerializer(payments, many=True)
     return Response(serializer.data)
 
@@ -115,6 +116,10 @@ def create_payment(request):
     serializer = RecentPaymentSerializer(data=request.data)
     if serializer.is_valid():
         serializer.save(user=request.user)
+        total_cash_paid = RecentPayment.objects.filter(user=request.user,member=serializer.validated_data['member']).aggregate(total=Sum('amount'))['total'] or 0.0
+        member = serializer.validated_data['member']
+        member.total_cash_paid = total_cash_paid
+        member.save(update_fields=["total_cash_paid"])
         return Response(serializer.data,status=status.HTTP_201_CREATED)
     return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
 

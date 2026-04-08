@@ -89,33 +89,37 @@ function PaymentsMenuContent() {
               <div className='flex flex-col gap-2
               outline-1
             outline-gray-800
-            p-2 rounded-lg'>
+            p-2 rounded-lg h-[380px]'>
                 <div className='flex flex-col'>
                     <h1>Recent Transactions</h1>
                     <p>Latest payment transactions from members</p>
                 </div>
+                <div className='flex flex-col gap-2 h-[300px] overflow-y-auto p-1'>
                 {
-                [...recentPayments].reverse().map((obj)=> {
-                //    const data = handleMember(obj.member)
-                //    console.log("the data is",data.name)
-                   return <PaymentCard data={obj}/>
-                })}
+                    recentPayments.map((obj)=> {
+                        //    const data = handleMember(obj.member)
+                        //    console.log("the data is",data.name)
+                        return <PaymentCard data={obj}/>
+                    })}
+                </div>
 
               </div>
-              <div className='flex flex-col gap-2 
+              <div className='flex flex-col gap-3 
               outline-1
             outline-gray-800
-            p-2 rounded-lg'>
+            p-2 rounded-lg h-[380px]'>
                 <div className='flex flex-col'>
                     <h1>Overdue Payments</h1>
                     <p>Members with outstanding payments</p>
                 </div>
+                <div className='flex flex-col gap-2 h-[300px] overflow-y-auto p-1'>
                 {
                 overdueMembers.map((obj)=> {
                 //    const data = handleMember(obj.member)
                 //    console.log("the data is",data.name)
                    return <OverdueCard obj={obj}/>
                 })}
+                </div>
 
               </div>
           </div>

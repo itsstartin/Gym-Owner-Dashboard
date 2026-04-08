@@ -41,7 +41,8 @@ function MemberMenuContent() {
     '>
          <div className='
           grid
-          grid-cols-2
+          grid-cols-1
+          sm:grid-cols-2
   
           '>
               <WelcomeHeader header="Member Management" desc="Manage your members and their details" />
@@ -67,6 +68,9 @@ function MemberMenuContent() {
         sm:grid-cols-2
         lg:grid-cols-3
         gap-4
+        overflow-y-auto
+        p-1
+        h-screen
         
         '>
             {

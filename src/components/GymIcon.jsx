@@ -31,7 +31,7 @@ function GymIcon() {
         justify-center
         items-start
         '>
-            <h1 className='text-sm font-extrabold'>GymPro Connect</h1>
+            <h1 className='text-sm font-extrabold'>GymHub Connect</h1>
             <p className='text-xs'>Admin Panel</p>
 
         </div>

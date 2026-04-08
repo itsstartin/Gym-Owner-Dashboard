@@ -24,19 +24,20 @@ function AddPaymentForm() {
         e.preventDefault()
         try{
             const responce = await axios.post('members/pay',paymentForm)
-            const memberDet = await axios.get(`members/get/${paymentForm.member}`)
-            const currentAmount = memberDet.data.total_cash_paid
-            if (currentAmount === null) {
-                const updatedAmount = Number(paymentForm.amount)
-                const res = await axios.patch(`members/update/${paymentForm.member}`, { total_cash_paid: updatedAmount })
-                console.log(updatedAmount)
-                console.log("Saved", responce.data, "updated ", res.data)
-            } else {
-                const updatedAmount = Number(currentAmount)+Number(paymentForm.amount)
-                const res = await axios.patch(`members/update/${paymentForm.member}`, { total_cash_paid: updatedAmount })
-                console.log(updatedAmount)
-                console.log("Saved", responce.data, "updated ", res.data)
-            }
+            console.log("Saved", responce.data)
+            // const memberDet = await axios.get(`members/get/${paymentForm.member}`)
+            // const currentAmount = memberDet.data.total_cash_paid
+            // if (currentAmount === null) {
+            //     const updatedAmount = Number(paymentForm.amount)
+            //     const res = await axios.patch(`members/update/${paymentForm.member}`, { total_cash_paid: updatedAmount })
+            //     console.log(updatedAmount)
+            //     console.log("Saved", responce.data, "updated ", res.data)
+            // } else {
+            //     const updatedAmount = Number(currentAmount)+Number(paymentForm.amount)
+            //     const res = await axios.patch(`members/update/${paymentForm.member}`, { total_cash_paid: updatedAmount })
+            //     console.log(updatedAmount)
+            //     console.log("Saved", responce.data, "updated ", res.data)
+            // }
             setPaymentForm({
                 'member':'',
                 'amount':'',

@@ -1,16 +1,82 @@
-# React + Vite
+🔥 Gym Management System
+A full-stack web application built to help gym owners manage members, attendance, payments, and business insights efficiently.
+🔗 Live Demo: https://gym-hub-jet.vercel.app⁠�
+💻 Backend Repo: https://github.com/itsstartin/Gym-Owner-Dashboard/backend
+🧠 Overview
+This project is designed as a SaaS-style system where each gym owner can manage their own data independently. It provides tools to track attendance, monitor payments, and analyze revenue through an intuitive dashboard.
+⚙️ Features
+👤 Member Management
+Add and manage gym members
+Assign membership plans (Basic, Premium, VIP)
+Track member status (Active, Due, Expired)
+💰 Payment System
+Record member payments
+Automatically calculate:
+Total paid amount
+Due amount
+Payment status
+View recent transactions and overdue members
+📊 Analytics Dashboard
+Revenue trends (last 6 months)
+Attendance patterns (weekly & daily)
+Membership insights by plan
+📅 Attendance Tracking
+Members can mark attendance via unique access links
+No login required for attendance marking
+Data used for analytics and inactivity detection
+🔔 Notification System
+Alerts for:
+Inactive members
+Expired memberships
+Prevents duplicate notifications using smart logic
+📧 Email Integration
+Integrated with Brevo API
+Sends:
+Attendance access links
+Payment reminders
+🔐 Authentication
+JWT-based login system
+Secure and isolated data for each user
+🏗️ Tech Stack
+Frontend
+React (Vite)
+Tailwind CSS
+Material UI
+Redux Toolkit
+Axios
+Chart.js
+Backend
+Django
+Django REST Framework
+SQLite
+JWT Authentication
+Deployment
+Frontend: Vercel
+Backend: Render
+🧠 Architecture Highlights
+RESTful API design for modular backend structure
+Backend-driven business logic for payments and member status
+Token-based access system for attendance without authentication
+Optimized data handling by shifting calculations from frontend to backend
+⚠️ Note
+The backend is hosted on Render free tier, so the first request may take a few seconds to start the server.
+🚀 Getting Started (Optional)
+Bash
+# Clone repository
+git clone https://github.com/itsstartin/Gym-Owner-Dashboard
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+# Install dependencies
+npm install
 
-Currently, two official plugins are available:
-
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
-
-## React Compiler
-
-The React Compiler is currently not compatible with SWC. See [this issue](https://github.com/vitejs/vite-plugin-react/issues/428) for tracking the progress.
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+# Run frontend
+npm run dev
+📌 Future Improvements
+Plain text
+• PostgreSQL integration  
+• Role-based access control  
+• Mobile optimization  
+• Payment gateway integration
+🧑‍💻 Author
+Salim Rasheed K K
+📧 salimrash91@gmail.com
+🔗 github.com/itsstartin

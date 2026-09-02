@@ -106,6 +106,14 @@ def calc_overdue_amount(user):
             total_due_amount=total_due_amount + float(data["overdue_amount"])
     return f"{total_due_amount:.2f}"
 
+def calc_member_period_payment_total(user, member):
+    total_cash_paid = RecentPayment.objects.filter(
+        user=user,
+        member=member,
+        created_at__date__gte=member.membership_start_date
+    ).aggregate(total=Sum('amount'))['total'] or 0.0
+    return total_cash_paid
+
 def calc_advance_amount(user):
     members = Member.objects.filter(user=user)
     total_advance_amount=0
@@ -129,4 +137,3 @@ def calc_member_overdue(member):
 
 
     
-

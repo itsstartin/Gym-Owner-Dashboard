@@ -1,16 +1,16 @@
 from django.contrib.auth.models import User
 from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
-from django.db.models.aggregates import Sum
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import api_view , permission_classes
 from rest_framework.response import Response
 from rest_framework import status
+from django.utils import timezone
 from members.services.calc_graph import calc_graph
 from members.services.percent_stat_diff import calc_percent_diff_data
 from members.services.member_access import send_mail_overdue_member, send_member_link
 from members.services.notification_service import check_expired_members, check_inactive_members
-from members.services.payment_calc import calc_data, calc_member_overdue
+from members.services.payment_calc import calc_data, calc_member_overdue, calc_member_period_payment_total, get_member_payment_status
 from . models import Attendance, Member , MembershipPlan, Notification, RecentPayment
 from . serializer import AttendanceSerializer, NotificationSerializer, UserSerializer ,MemberSerializer, RecentPaymentSerializer , MembershipPlanSerializer
 from datetime import date
@@ -115,11 +115,18 @@ def create_member(request):
 def create_payment(request):
     serializer = RecentPaymentSerializer(data=request.data)
     if serializer.is_valid():
-        serializer.save(user=request.user)
-        total_cash_paid = RecentPayment.objects.filter(user=request.user,member=serializer.validated_data['member']).aggregate(total=Sum('amount'))['total'] or 0.0
         member = serializer.validated_data['member']
+        member_status = get_member_payment_status(member)["status"]
+        payment = serializer.save(user=request.user)
+
+        update_fields = ["total_cash_paid"]
+        if member_status == "inactive":
+            member.membership_start_date = timezone.localtime(payment.created_at).date()
+            update_fields.append("membership_start_date")
+
+        total_cash_paid = calc_member_period_payment_total(request.user, member)
         member.total_cash_paid = total_cash_paid
-        member.save(update_fields=["total_cash_paid"])
+        member.save(update_fields=update_fields)
         return Response(serializer.data,status=status.HTTP_201_CREATED)
     return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
 

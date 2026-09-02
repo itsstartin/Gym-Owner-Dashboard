@@ -114,6 +114,18 @@ def calc_member_period_payment_total(user, member):
     ).aggregate(total=Sum('amount'))['total'] or 0.0
     return total_cash_paid
 
+def calc_member_plan_transfer_amount(member, today=None):
+    if today is None:
+        today = date.today()
+
+    data = get_member_payment_status(member, today=today)
+    remaining_days = (data["membership_end_date"] - today).days
+    if remaining_days < 0:
+        remaining_days = 0
+
+    remaining_amount = (remaining_days / 30) * member.membership_plan.plan_price
+    return remaining_amount
+
 def calc_advance_amount(user):
     members = Member.objects.filter(user=user)
     total_advance_amount=0

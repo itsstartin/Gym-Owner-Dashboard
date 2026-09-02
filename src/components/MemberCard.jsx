@@ -4,11 +4,13 @@ import axios from '../axios';
 import { useSelector } from 'react-redux';
 import Switch from '@mui/material/Switch';
 import MemberViewProfile from './MemberViewProfile';
-import { Eye, User} from 'lucide-react';
+import UpdateMemberForm from './UpdateMemberForm';
+import { Eye, Pencil, User} from 'lucide-react';
 
 function MemberCard(props) {
     const [enabled, setEnabled] = useState(false);
     const [viewProfile,setViewProfile] = useState()
+    const [updateMember,setUpdateMember] = useState()
     const markAttendanceState = useSelector((state)=>state.markAttendanceState.value)
     useEffect(()=>{
         axios.get(`members/getattendance/${props.member.id}`).then((res)=>{
@@ -16,7 +18,7 @@ function MemberCard(props) {
             console.log(res.data) : 
             setEnabled(true)
         })
-    },[markAttendanceState]) 
+    },[markAttendanceState, props.member.id]) 
     const markAttendance = () => {
         const today = new Date().toISOString();
         axios.post('members/markattendance',{
@@ -108,23 +110,53 @@ function MemberCard(props) {
             </div>
         </div>
         <div className='
-        flex
-        justify-center
-        w-full
-        items-center
-        bg-black
+        grid
+        grid-cols-2
         gap-2
-        rounded-[8px]
-        hover:outline-1
-        '
-        onClick={()=>setViewProfile(props.member)}
-        >
-            <Eye/>
-            <h1>View Profile</h1>
+        '>
+            <button
+            type='button'
+            className='
+            flex
+            justify-center
+            w-full
+            items-center
+            bg-black
+            gap-2
+            rounded-[8px]
+            p-1
+            hover:outline-1
+            '
+            onClick={()=>setViewProfile(props.member)}
+            >
+                <Eye size={18}/>
+                <h1>View</h1>
+            </button>
+            <button
+            type='button'
+            className='
+            flex
+            justify-center
+            w-full
+            items-center
+            bg-black
+            gap-2
+            rounded-[8px]
+            p-1
+            hover:outline-1
+            '
+            onClick={()=>setUpdateMember(props.member)}
+            >
+                <Pencil size={18}/>
+                <h1>Update</h1>
+            </button>
         </div>
     </div>
     {viewProfile ? 
     <MemberViewProfile viewProfile={viewProfile} setViewProfile={setViewProfile}/>
+    :''}
+    {updateMember ? 
+    <UpdateMemberForm member={updateMember} onClose={()=>setUpdateMember()} onUpdated={props.onMemberUpdated}/>
     :''}
     </>
   )

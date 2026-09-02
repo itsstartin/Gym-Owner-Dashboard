@@ -1,6 +1,7 @@
 from django.contrib.auth.models import User
 from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
+from django.shortcuts import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import api_view , permission_classes
 from rest_framework.response import Response
@@ -10,7 +11,7 @@ from members.services.calc_graph import calc_graph
 from members.services.percent_stat_diff import calc_percent_diff_data
 from members.services.member_access import send_mail_overdue_member, send_member_link
 from members.services.notification_service import check_expired_members, check_inactive_members
-from members.services.payment_calc import calc_data, calc_member_overdue, calc_member_period_payment_total, get_member_payment_status
+from members.services.payment_calc import calc_data, calc_member_overdue, calc_member_period_payment_total, calc_member_plan_transfer_amount, get_member_payment_status
 from . models import Attendance, Member , MembershipPlan, Notification, RecentPayment
 from . serializer import AttendanceSerializer, NotificationSerializer, UserSerializer ,MemberSerializer, RecentPaymentSerializer , MembershipPlanSerializer
 from datetime import date
@@ -92,11 +93,29 @@ def get_graph(request):
 
 
 @api_view(['PATCH'])
+@permission_classes([IsAuthenticated])
 def update_member(request,id):
-    member = Member.objects.get(id=id)
+    member = get_object_or_404(Member, id=id, user=request.user)
     serializer = MemberSerializer(member, data =request.data ,partial=True)
     if serializer.is_valid():
-        serializer.save()
+        new_plan = serializer.validated_data.get("membership_plan")
+        plan_changed = new_plan is not None and new_plan.id != member.membership_plan_id
+
+        if plan_changed:
+            member_status = get_member_payment_status(member)["status"]
+            if member_status == "expired":
+                return Response(
+                    {"membership_plan_id": "Expired members cannot change plans because they have overdue amount."},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            total_cash_paid = calc_member_plan_transfer_amount(member)
+            serializer.save(
+                membership_start_date=date.today(),
+                total_cash_paid=total_cash_paid
+            )
+        else:
+            serializer.save()
         return Response(serializer.data,status=status.HTTP_202_ACCEPTED)
     return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
 

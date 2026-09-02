@@ -8,13 +8,14 @@ from rest_framework.test import APIRequestFactory, force_authenticate
 from members.models import Attendance, Member, MembershipPlan, RecentPayment
 from members.serializer import MemberSerializer
 from members.services.payment_calc import calc_member_overdue, calc_overdue_amount
-from members.views import create_payment
+from members.views import create_payment, update_member
 
 
 class MemberStatusTests(TestCase):
     def setUp(self):
         self.user = User.objects.create_user(username="owner", password="pass")
         self.plan = MembershipPlan.objects.create(name="Basic", plan_price=300)
+        self.premium_plan = MembershipPlan.objects.create(name="Premium", plan_price=600)
         self.start_date = date.today() - timedelta(days=40)
         self.factory = APIRequestFactory()
 
@@ -115,3 +116,67 @@ class MemberStatusTests(TestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(member.membership_start_date, active_start_date)
         self.assertEqual(member.total_cash_paid, 450)
+
+    def test_plan_change_carries_remaining_value_to_new_plan_from_today(self):
+        active_start_date = date.today() - timedelta(days=10)
+        member = self.create_member(
+            "Plan Change Member",
+            "+917777777777",
+            "plan-change@example.com",
+            total_cash_paid=300,
+            membership_start_date=active_start_date
+        )
+        request = self.factory.patch(
+            f"/members/update/{member.id}",
+            {"membership_plan_id": self.premium_plan.id},
+            format="json"
+        )
+        force_authenticate(request, user=self.user)
+
+        response = update_member(request, member.id)
+        member.refresh_from_db()
+        serialized_member = MemberSerializer(member).data
+        overdue = calc_member_overdue(member)
+
+        self.assertEqual(response.status_code, status.HTTP_202_ACCEPTED)
+        self.assertEqual(member.membership_plan, self.premium_plan)
+        self.assertEqual(member.membership_start_date, date.today())
+        self.assertAlmostEqual(member.total_cash_paid, 200)
+        self.assertEqual(overdue["membership_end_date"], date.today() + timedelta(days=10))
+        self.assertEqual(serialized_member["status"], "active")
+
+    def test_expired_member_cannot_change_plan(self):
+        member = self.create_member("Expired Locked Member", "+918888888888", "expired-locked@example.com")
+        membership_end_date = self.start_date + timedelta(days=30)
+        self.mark_attendance(member, membership_end_date + timedelta(days=1))
+        request = self.factory.patch(
+            f"/members/update/{member.id}",
+            {"membership_plan_id": self.premium_plan.id},
+            format="json"
+        )
+        force_authenticate(request, user=self.user)
+
+        response = update_member(request, member.id)
+        member.refresh_from_db()
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(member.membership_plan, self.plan)
+
+    def test_expired_member_can_update_contact_details(self):
+        member = self.create_member("Expired Contact Member", "+919999999999", "expired-contact@example.com")
+        membership_end_date = self.start_date + timedelta(days=30)
+        self.mark_attendance(member, membership_end_date + timedelta(days=1))
+        request = self.factory.patch(
+            f"/members/update/{member.id}",
+            {"email": "expired-contact-new@example.com", "phone_number": "+910000000000"},
+            format="json"
+        )
+        force_authenticate(request, user=self.user)
+
+        response = update_member(request, member.id)
+        member.refresh_from_db()
+
+        self.assertEqual(response.status_code, status.HTTP_202_ACCEPTED)
+        self.assertEqual(member.email, "expired-contact-new@example.com")
+        self.assertEqual(member.phone_number, "+910000000000")
+        self.assertEqual(member.membership_plan, self.plan)

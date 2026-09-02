@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import WelcomeHeader from '../components/WelcomeHeader'
 import MemberCard from '../components/MemberCard'
 import MemberSearchBar from '../components/MemberSearchBar'
@@ -17,14 +17,18 @@ function MemberMenuContent() {
   const markAttendanceState = useSelector((state)=>state.markAttendanceState.value)
   const dispatch = useDispatch()
   const [members, setMembers]=useState([])
-  useEffect(()=>{
+  const refreshMembers = useCallback(()=>{
     getMembers().then((response)=>{
       setMembers(response.data)
     })
+  },[])
+
+  useEffect(()=>{
+    refreshMembers()
     return ()=>{
       dispatch(markAttendanceOff())
     }
-  },[])
+  },[dispatch, refreshMembers])
   const filteredMembers = members.filter((obj)=>{
     return obj.name.toLowerCase().includes(filterValue.search.toLowerCase()) && (filterValue.status==='' || obj.status===filterValue.status) && (filterValue.type==='' || obj.membership_plan.name===filterValue.type)
   })
@@ -77,7 +81,7 @@ function MemberMenuContent() {
             {
             filteredMembers.length>0 ?
             filteredMembers.map((obj)=>{
-              return <MemberCard member={obj}/>
+              return <MemberCard member={obj} key={obj.id} onMemberUpdated={refreshMembers}/>
             })
             :
             <div className='

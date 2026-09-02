@@ -1,5 +1,5 @@
 import { Funnel, Search } from 'lucide-react'
-import React, { useState } from 'react'
+import React from 'react'
 
 function MemberSearchBar({filterValue, setFilterValue}) {
 
@@ -49,6 +49,7 @@ function MemberSearchBar({filterValue, setFilterValue}) {
                 <option value=''>All Status</option>
                 <option value='active'>Active</option>
                 <option value='expired'>Expired</option>
+                <option value='inactive'>Inactive</option>
                 <option value='due'>Due</option>
             </select>
         </div>

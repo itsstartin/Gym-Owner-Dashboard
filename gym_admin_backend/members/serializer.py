@@ -2,9 +2,8 @@ from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
 from rest_framework import serializers
 
-from members.services.payment_calc import calc_member_overdue
+from members.services.payment_calc import calc_member_overdue, get_member_payment_status
 from . models import Attendance, Member, Notification, RecentPayment, MembershipPlan
-from datetime import date
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -44,21 +43,8 @@ class MemberSerializer(serializers.ModelSerializer):
             'user': {'read_only': True}
         }
     def get_status(self, obj):
-        today=date.today()
-        total_paid=obj.total_cash_paid
-        plan_price=obj.membership_plan.plan_price
-        current_validity=total_paid/plan_price
-        current_validity=current_validity * 30
-        start_date=obj.membership_start_date
-        expected_validity_diff= today - start_date
-        expected_validity= expected_validity_diff.days
-        if 0 < (current_validity - expected_validity) < 4 :
-            return "due"
-        elif expected_validity < current_validity:
-            return "active"
-        elif expected_validity > current_validity:
-            return "expired"
-        return "active"
+        data=get_member_payment_status(obj)
+        return data["status"]
     def get_membership_end_date(self,obj):
         data=calc_member_overdue(obj)
         return data["membership_end_date"]

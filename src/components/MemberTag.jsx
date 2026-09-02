@@ -58,6 +58,17 @@ function MemberTag(props) {
             <h1>Due</h1>
         </div>
       )
+    else if(props.status==='inactive')
+      return(
+        <div className='
+        flex
+        rounded-[4px]
+        bg-gray-800
+        text-gray-300
+        '>
+          <h1>Inactive</h1>
+        </div>
+      )
     else
       return(
         <div className='

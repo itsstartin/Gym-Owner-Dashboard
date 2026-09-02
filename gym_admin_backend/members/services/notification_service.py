@@ -2,6 +2,7 @@ from datetime import timedelta
 from django.utils import timezone
 
 from members.models import Attendance, Member, Notification
+from members.services.payment_calc import get_member_payment_status
 
 def check_inactive_members(user):
     members=Member.objects.filter(user=user)
@@ -28,20 +29,11 @@ def check_inactive_members(user):
             )
         
 def check_expired_members(user):
-    today=timezone.now().date()
     members=Member.objects.filter(user=user)
     for member in members:
-        total_paid=member.total_cash_paid
-        plan_price = member.membership_plan.plan_price
-        current_validity=total_paid/plan_price
-        current_validity=int(current_validity * 30)
-        start_date=member.membership_start_date
-        expected_validity_diff= today - start_date
-        expected_validity= expected_validity_diff.days
-        overdue_validity = 0
-        if not expected_validity > current_validity:
+        data = get_member_payment_status(member, today=timezone.now().date())
+        if data["status"] != "expired":
             continue
-        overdue_validity=expected_validity-current_validity
         exists = Notification.objects.filter(
             user=user,
             member=member,
@@ -53,6 +45,5 @@ def check_expired_members(user):
             user=user,
             member=member,
             type="expired",
-            message=f"{member.name}'s membership expired {overdue_validity} days ago"
+            message=f"{member.name}'s membership expired {data['overdue_days']} days ago"
         )
-

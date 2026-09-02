@@ -66,7 +66,7 @@ def get_overdue_members(request):
     overdue_list = []
     for member in members:
         data = calc_member_overdue(member)
-        if data["overdue_days"] > 0:
+        if data["status"] == "expired":
             overdue_list.append({
                 "id": member.id,
                 "name": member.name,

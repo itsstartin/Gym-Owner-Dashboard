@@ -41,6 +41,7 @@ function MemberCard(props) {
     bg-gray-900
     text-white
     rounded-[8px]
+    h-fit
     gap-2
     p-2
     outline-1

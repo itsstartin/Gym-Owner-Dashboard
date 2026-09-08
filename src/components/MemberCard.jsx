@@ -5,12 +5,14 @@ import { useSelector } from 'react-redux';
 import Switch from '@mui/material/Switch';
 import MemberViewProfile from './MemberViewProfile';
 import UpdateMemberForm from './UpdateMemberForm';
-import { Eye, Pencil, User} from 'lucide-react';
+import MemberHistoryModal from './MemberHistoryModal';
+import { CalendarDays, Eye, Pencil, ReceiptIndianRupee, User} from 'lucide-react';
 
 function MemberCard(props) {
     const [enabled, setEnabled] = useState(false);
     const [viewProfile,setViewProfile] = useState()
     const [updateMember,setUpdateMember] = useState()
+    const [historyType, setHistoryType] = useState()
     const markAttendanceState = useSelector((state)=>state.markAttendanceState.value)
     useEffect(()=>{
         axios.get(`members/getattendance/${props.member.id}`).then((res)=>{
@@ -64,14 +66,22 @@ function MemberCard(props) {
                 <h1>{props.member.name}</h1>
                 <p>{props.member.email}</p>
             </div>
-            {markAttendanceState ?
-            <Switch
-              checked={enabled}
-              onChange={enabled ? deleteAttendance : markAttendance}
-              />
-            :
-            ''
-            }
+            <div className='flex items-start gap-1'>
+              <button type='button' aria-label='Attendance history' title='Attendance history' className='rounded p-1 hover:bg-gray-800 hover:outline-1' onClick={()=>setHistoryType('attendance')}>
+                <CalendarDays size={18}/>
+              </button>
+              <button type='button' aria-label='Payment history' title='Payment history' className='rounded p-1 hover:bg-gray-800 hover:outline-1' onClick={()=>setHistoryType('payment')}>
+                <ReceiptIndianRupee size={18}/>
+              </button>
+              {markAttendanceState ?
+              <Switch
+                checked={enabled}
+                onChange={enabled ? deleteAttendance : markAttendance}
+                />
+              :
+              ''
+              }
+            </div>
         </div>
         <div className='
         flex
@@ -157,6 +167,9 @@ function MemberCard(props) {
     :''}
     {updateMember ? 
     <UpdateMemberForm member={updateMember} onClose={()=>setUpdateMember()} onUpdated={props.onMemberUpdated}/>
+    :''}
+    {historyType ?
+    <MemberHistoryModal member={props.member} type={historyType} onClose={()=>setHistoryType()}/>
     :''}
     </>
   )

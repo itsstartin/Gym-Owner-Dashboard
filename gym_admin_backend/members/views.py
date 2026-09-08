@@ -184,6 +184,28 @@ def get_attendance(request,id):
     return Response(serializer.data)
 
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_attendance_history(request, id):
+    get_object_or_404(Member, id=id, user=request.user)
+    attendance = Attendance.objects.filter(
+        user=request.user,
+        member_id=id
+    ).order_by('-date')
+    serializer = AttendanceSerializer(attendance, many=True)
+    return Response(serializer.data)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_payment_history(request, id):
+    get_object_or_404(Member, id=id, user=request.user)
+    payments = RecentPayment.objects.filter(
+        user=request.user,
+        member_id=id
+    ).order_by('-created_at')
+    serializer = RecentPaymentSerializer(payments, many=True)
+    return Response(serializer.data)
+
+@api_view(['GET'])
 def member_access(request, token):
     try:
         member = Member.objects.get(access_token=token)

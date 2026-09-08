@@ -8,14 +8,17 @@ function StatsCard(props) {
     className='
     flex
     flex-col
-    rounded-[8px]
-    gap-6
-    bg-gray-900
+    rounded-xl
+    gap-7
+    bg-gray-900/80
     text-white
     p-5
-    outline-1
-    outline-gray-800
-    hover:outline-green-900
+    border
+    border-gray-800
+    shadow-sm
+    shadow-black/20
+    transition-colors
+    hover:border-green-900
     '>
         {!Icon ?
         <>
@@ -24,7 +27,7 @@ function StatsCard(props) {
         flex
         justify-between
         '>
-            <h1 className='text-[14px] font-bold'>Active Members</h1>
+            <h1 className='text-sm font-medium text-gray-400'>Active Members</h1>
             <img
             className='
             w-6
@@ -39,7 +42,7 @@ function StatsCard(props) {
         justify-between
         align-start
         '>
-            <h1 className='text-3xl font-extrabold'>{props.num}</h1>
+            <h1 className='text-3xl font-bold tracking-tight'>{props.num}</h1>
             <div className='flex items-center justify-start gap-1'>
                 <p className={`text-[12px] ${props.percentDiff ? props.percentDiff > 0 ? 'text-green-500' : 'text-red-500' : ''}`}>{props.percentDiff ? `${props.percentDiff > 0 ? '+' : ''}${props.percentDiff}%` : ''}</p>
                 <p className='text-[12px]'>{props.percentDiff ? ` from ${props.percentFrom}` : ''}</p>
@@ -54,11 +57,12 @@ function StatsCard(props) {
         flex
         justify-between
         '>
-            <h1 className='text-[14px] font-bold'>{props.title}</h1>
+            <h1 className='text-sm font-medium text-gray-400'>{props.title}</h1>
             <Icon
             className='
-            w-6
-            h-6
+            w-5
+            h-5
+            text-green-500
             '
             />
         </div>
@@ -69,10 +73,10 @@ function StatsCard(props) {
         justify-between
         align-start
         '>
-            <h1 className='text-3xl font-extrabold'>{props.num ? props.num:'0'}</h1>
+            <h1 className='text-3xl font-bold tracking-tight'>{props.num ? props.num:'0'}</h1>
             <div className='flex items-center justify-start gap-1'>
                 <p className={`text-[12px] ${props.percentDiff ? props.percentDiff > 0 ? 'text-green-500' : 'text-red-500' : ''}`}>{props.percentDiff ? `${props.percentDiff > 0 ? '+' : ''}${props.percentDiff}%` : ''}</p>
-                <p className='text-[12px]'>{props.percentDiff ? ` from ${props.percentFrom}` : ''}</p>
+                <p className='text-[12px] text-gray-400'>{props.percentDiff ? ` from ${props.percentFrom}` : ''}</p>
             </div>
         </div>
         </>}

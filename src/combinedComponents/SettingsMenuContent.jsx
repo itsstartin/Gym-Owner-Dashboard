@@ -20,18 +20,19 @@ function SettingsMenuContent() {
     min-h-screen
     max-h-fit
     gap-6
-    p-3
+    p-4
     sm:p-6
+    lg:p-8
     '>
         <WelcomeHeader header='Settings' desc='System configuration and preferences'/>
-        <div className="flex gap-8">
-          <h1 className={currentSettingsPage==='Profile' ? 'bg-gray-800 rounded-lg pt-0.5 pb-0.5 p-3 font-semibold':'pt-0.5 pb-0.5 p-3 font-medium'}
+        <div className="flex w-full max-w-sm rounded-xl border border-gray-800 bg-gray-900 p-1">
+          <button type='button' className={currentSettingsPage==='Profile' ? 'flex-1 rounded-lg bg-green-700 px-4 py-2 text-sm font-semibold shadow-sm':'flex-1 rounded-lg px-4 py-2 text-sm font-medium text-gray-400 hover:bg-gray-800 hover:text-white'}
           onClick={()=>setCurrentSettingsPage('Profile')}
-          >Profile</h1>
-          <h1 
-          className= {currentSettingsPage==='Members' ? 'bg-gray-800 rounded-lg pt-0.5 pb-0.5 p-3 font-semibold':'pt-0.5 pb-0.5 p-3 font-medium'}
+          >Profile</button>
+          <button type='button'
+          className= {currentSettingsPage==='Members' ? 'flex-1 rounded-lg bg-green-700 px-4 py-2 text-sm font-semibold shadow-sm':'flex-1 rounded-lg px-4 py-2 text-sm font-medium text-gray-400 hover:bg-gray-800 hover:text-white'}
           onClick={()=>setCurrentSettingsPage('Members')}
-          >Members</h1>
+          >Members</button>
         </div>
         {currentSettingsPage==='Profile'?
         <div className='flex

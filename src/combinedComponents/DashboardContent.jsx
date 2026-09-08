@@ -40,13 +40,16 @@ function DashboardContent() {
     w-full
     min-h-screen
     max-h-fit
-    gap-4
-    p-3
+    gap-6
+    p-4
     sm:p-6
+    lg:p-8
     '>
         <div className='
         grid
-        grid-cols-2
+        grid-cols-1
+        gap-4
+        sm:grid-cols-2
 
         '>
             <WelcomeHeader header={`Welcome back, ${userDetails.username || 'Admin'}`} desc="Here is what is happening at gym today" />
@@ -59,7 +62,6 @@ function DashboardContent() {
                 <div className='
                 grid
                 grid-cols-1
-                gap-2
                 '>
                 <IconDescBtn icon={Plus} label='Add Member' onClick={()=>dispatch(addMemberOn())}/>
                 </div>
@@ -70,7 +72,7 @@ function DashboardContent() {
         grid
         grid-cols-1
         lg:grid-cols-3
-        gap-4
+        gap-5
         '>
             <StatsCard icon={Users} title='Active Members' num={calcData.members_count || 0}/>
             <StatsCard icon={IndianRupee} title='Revenue This Month' num={`₹${calcData.month_revenue || 0}`} percentDiff={percentDiffData.month_revenue_percent_diff || 0} percentFrom='last month'/>
@@ -80,7 +82,7 @@ function DashboardContent() {
         grid
         grid-cols-1
         lg:grid-cols-2
-        gap-4
+        gap-5
         '>
             <GraphCard title='Revenue' obj={graphData.revenue} Bar/>
             <GraphCard title='Weekly Attendance' obj={graphData.weekly_attendance}/>

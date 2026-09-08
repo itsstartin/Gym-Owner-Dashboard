@@ -16,8 +16,8 @@ function NotificationCard(props) {
   return (
     <div
             key={props.obj.id}
-            className={`flex items-center justify-between p-4 rounded-xl shadow-sm  outline-gray-700 ${
-              read ? "bg-gray-900 outline-1" : "bg-gray-800 outline-2"
+            className={`flex items-center justify-between gap-4 rounded-xl border p-4 shadow-sm transition-colors ${
+              read ? "border-gray-800 bg-gray-900/70" : "border-green-900 bg-gray-900"
             }`}
           >
             <div className="flex items-start gap-3">
@@ -28,14 +28,14 @@ function NotificationCard(props) {
               />
 
               <div>
-                <p className="text-sm">{props.obj.message}</p>
-                <span className="text-xs text-gray-500">Time</span>
+                <p className="text-sm leading-5">{props.obj.message}</p>
+                <span className="mt-1 block text-xs text-gray-500">Notification</span>
               </div>
             </div>
 
-            <div className="flex items-center gap-6">
-                <span className="text-sm font-semibold text-red-500 outline-1 rounded-md outline-gray-700 p-1 ">{props.obj.type}</span>
-              <button onClick={() => markAsRead(props.obj.id)}>
+            <div className="flex shrink-0 items-center gap-3">
+                <span className="rounded-md bg-red-950 px-2 py-1 text-xs font-semibold text-red-400">{props.obj.type}</span>
+              <button type='button' aria-label={read ? 'Read' : 'Mark as read'} title={read ? 'Read' : 'Mark as read'} className='rounded-lg p-2 text-gray-400 hover:bg-gray-800 hover:text-green-400' onClick={() => markAsRead(props.obj.id)}>
                 {
                     read ?
                     <CheckCheck/>

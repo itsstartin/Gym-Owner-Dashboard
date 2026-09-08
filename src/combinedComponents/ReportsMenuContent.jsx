@@ -22,9 +22,10 @@ function ReportsMenuContent() {
       w-full
       min-h-screen
       max-h-fit
-      gap-4
-      p-3
+      gap-6
+      p-4
       sm:p-6
+      lg:p-8
       '>
           <div className='
           grid
@@ -39,7 +40,7 @@ function ReportsMenuContent() {
           grid
           grid-cols-1
           lg:grid-cols-2
-          gap-4
+          gap-5
           '>
             <StatsCard icon={DollarSign} title='Total Revenue' num={`₹${calcData.total_revenue || 0}`}/>
             <StatsCard icon={Users} title='Avg. Daily Attendance' num={calcData.month_att_avg || 0}/>

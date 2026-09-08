@@ -5,37 +5,43 @@ import { User, X } from 'lucide-react'
 function MemberViewProfile({viewProfile, setViewProfile}) {
   return (
     <div className='fixed
+    z-40
     flex
     justify-center
     items-center
     bg-black/70
     inset-0
+    p-4
+    backdrop-blur-sm
     '>
     <div className='
     flex
     flex-col
     bg-gray-900
     text-white
-    rounded-[8px]
-    gap-2
-    p-2
-    outline-1
-    outline-gray-800
+    w-full
+    max-w-md
+    rounded-xl
+    gap-4
+    p-5
+    border
+    border-gray-800
+    shadow-2xl
     '>
         <div className='
         flex
-        gap-2
+        gap-3
         '>
-            <User size={40}/>
+            <div className='rounded-lg bg-gray-800 p-2 text-green-500'><User size={24}/></div>
             <div className='
             flex
             flex-col
             w-full
             '>  
-                <h1>{viewProfile.name}</h1>
-                <p>{viewProfile.email}</p>
+                <h1 className='font-semibold'>{viewProfile.name}</h1>
+                <p className='truncate text-sm text-gray-400'>{viewProfile.email}</p>
             </div>
-            <X onClick={()=>setViewProfile()}/>
+            <button type='button' aria-label='Close profile' className='rounded-lg p-1 text-gray-400 hover:bg-gray-800 hover:text-white' onClick={()=>setViewProfile()}><X size={20}/></button>
         </div>
         <div className='
         flex
@@ -55,7 +61,7 @@ function MemberViewProfile({viewProfile, setViewProfile}) {
         flex
         items-center
         '>
-            <p>Phone:</p>
+            <p className='text-sm text-gray-400'>Phone</p>
             <div className='
             flex
             justify-end
@@ -68,7 +74,7 @@ function MemberViewProfile({viewProfile, setViewProfile}) {
         flex
         items-center
         '>
-            <p>Total Paid Amount:</p>
+            <p className='text-sm text-gray-400'>Total Paid Amount</p>
             <div className='
             flex
             justify-end
@@ -81,7 +87,7 @@ function MemberViewProfile({viewProfile, setViewProfile}) {
         flex
         items-center
         '>
-            <p>Membership Start Date:</p>
+            <p className='text-sm text-gray-400'>Membership Start</p>
             <div className='
             flex
             justify-end
@@ -94,7 +100,7 @@ function MemberViewProfile({viewProfile, setViewProfile}) {
         flex
         items-center
         '>
-            <p>Membership End Date:</p>
+            <p className='text-sm text-gray-400'>Membership End</p>
             <div className='
             flex
             justify-end
@@ -111,7 +117,7 @@ function MemberViewProfile({viewProfile, setViewProfile}) {
                 viewProfile.status==='expired' &&
 
                 <>
-                     <p>Overdue Amount:</p>
+                     <p className='text-sm text-gray-400'>Overdue Amount</p>
                     <div className='
                     flex
                     justify-end

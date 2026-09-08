@@ -69,18 +69,19 @@ function UpdateMemberForm({member, onClose, onUpdated}) {
       max-w-sm
       flex-col
       gap-3
-      rounded-[8px]
+      rounded-xl
       bg-gray-950
       p-4
       text-white
-      outline-1
-      outline-gray-800
+      border
+      border-gray-800
+      shadow-2xl
       '>
         <div className='flex items-start gap-2'>
           <div className='flex w-full flex-col'>
             <h1 className='text-lg font-bold'>{member.name}</h1>
           </div>
-          <button type='button' onClick={onClose} className='rounded-[4px] p-1 hover:bg-gray-800'>
+          <button type='button' aria-label='Close update form' onClick={onClose} className='rounded-lg p-1.5 text-gray-400 hover:bg-gray-800 hover:text-white'>
             <X size={18}/>
           </button>
         </div>
@@ -92,7 +93,7 @@ function UpdateMemberForm({member, onClose, onUpdated}) {
             type='email'
             value={memberForm.email}
             onChange={handleChange}
-            className='rounded-[4px] bg-gray-900 p-2 text-white outline-1 outline-gray-700'
+            className='rounded-lg border border-gray-700 bg-gray-950 p-2.5 text-white outline-none focus:border-green-600'
           />
         </label>
 
@@ -103,7 +104,7 @@ function UpdateMemberForm({member, onClose, onUpdated}) {
             type='tel'
             value={memberForm.phone_number}
             onChange={handleChange}
-            className='rounded-[4px] bg-gray-900 p-2 text-white outline-1 outline-gray-700'
+            className='rounded-lg border border-gray-700 bg-gray-950 p-2.5 text-white outline-none focus:border-green-600'
           />
         </label>
 
@@ -114,7 +115,7 @@ function UpdateMemberForm({member, onClose, onUpdated}) {
             name='membership_plan_id'
             disabled={planLocked}
             onChange={handleChange}
-            className='rounded-[4px] bg-gray-900 p-2 text-white outline-1 outline-gray-700 disabled:text-gray-500'
+            className='rounded-lg border border-gray-700 bg-gray-950 p-2.5 text-white outline-none focus:border-green-600 disabled:text-gray-500'
           >
             {plans.map((obj)=>{
               return <option value={obj.id} key={obj.id}>{obj.name} - {obj.plan_price}</option>
@@ -126,7 +127,7 @@ function UpdateMemberForm({member, onClose, onUpdated}) {
           <button
             type='button'
             onClick={onClose}
-            className='flex items-center gap-2 rounded-[8px] bg-gray-800 px-3 py-2 text-sm font-bold hover:bg-gray-700'
+            className='flex items-center gap-2 rounded-lg bg-gray-800 px-3 py-2 text-sm font-semibold hover:bg-gray-700'
           >
             <X size={16}/>
             Cancel
@@ -134,7 +135,7 @@ function UpdateMemberForm({member, onClose, onUpdated}) {
           <button
             type='submit'
             disabled={isSaving}
-            className='flex items-center gap-2 rounded-[8px] bg-green-800 px-3 py-2 text-sm font-bold hover:bg-green-900 disabled:bg-gray-700'
+            className='flex items-center gap-2 rounded-lg bg-green-700 px-3 py-2 text-sm font-semibold hover:bg-green-600 disabled:bg-gray-700'
           >
             <Save size={16}/>
             {isSaving ? 'Saving' : 'Save'}

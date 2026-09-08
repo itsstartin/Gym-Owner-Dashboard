@@ -22,7 +22,8 @@ function MainPage() {
   return (
     <div className='
     flex
-    font-sans-serif
+    min-h-screen
+    font-sans
     bg-gray-950
     text-white
     '>

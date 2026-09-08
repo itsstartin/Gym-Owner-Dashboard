@@ -18,23 +18,22 @@ function OverdueCard(props) {
   }
   return (
     <div className="
-    flex flex-col rounded-[8px] p-2 bg-gray-900 gap-2 outline-1
-    outline-red-800
-    hover:outline-red-500">
+    flex flex-col rounded-lg border border-red-950 p-3 bg-gray-950 gap-3 transition-colors
+    hover:border-red-800">
         <div className='flex justify-between'>
-            <h1>{props.obj.name}</h1>
-            <p>₹ {props.obj.overdue_amount}</p>
+            <h1 className='font-medium'>{props.obj.name}</h1>
+            <p className='font-semibold text-red-400'>₹ {props.obj.overdue_amount}</p>
         </div>
         <div className='flex justify-between'>
-            <h1>{props.obj.membership_plan}</h1>
+            <h1 className='text-sm text-gray-400'>{props.obj.membership_plan}</h1>
             <div className='flex gap-2'>
-              <div className='bg-red-600 p-0.5 rounded-lg'>
+              <div className='rounded-md bg-red-950 px-2 py-1 text-xs font-semibold text-red-400'>
                   <h1>{`${props.obj.overdue_days} days overdue`}</h1>
               </div>
               {isLoading ?
               <ClipLoader size={20} color='#fff'/>
               :
-              <Send onClick={()=>notifyOverdueMembers(props.obj)}/>
+              <button type='button' aria-label='Notify member' title='Notify member' className='rounded-md p-1 text-gray-400 hover:bg-gray-800 hover:text-white' onClick={()=>notifyOverdueMembers(props.obj)}><Send size={18}/></button>
               }
             </div>
         </div>

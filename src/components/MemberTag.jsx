@@ -6,9 +6,10 @@ function MemberTag(props) {
       return (
         <div className='
         flex
-        rounded-[4px]
+        rounded-md
         bg-blue-950
         text-blue-500
+        px-2 py-0.5 text-xs font-semibold
         '>
             <h1>Basic</h1>
         </div>
@@ -17,9 +18,10 @@ function MemberTag(props) {
       return (
         <div className='
         flex
-        rounded-[4px]
+        rounded-md
         bg-green-950
         text-green-500
+        px-2 py-0.5 text-xs font-semibold
         '>
             <h1>Premium</h1>
         </div>
@@ -28,9 +30,10 @@ function MemberTag(props) {
       return(
         <div className='
         flex
-        rounded-[4px]
+        rounded-md
         bg-violet-950
         text-violet-500
+        px-2 py-0.5 text-xs font-semibold
         '>
           <h1>VIP</h1>
         </div>
@@ -40,9 +43,10 @@ function MemberTag(props) {
       return (
         <div className='
         flex
-        rounded-[4px]
+        rounded-md
         bg-green-950
         text-green-500
+        px-2 py-0.5 text-xs font-semibold
         '>
             <h1>Active</h1>
         </div>
@@ -51,9 +55,10 @@ function MemberTag(props) {
       return (
         <div className='
         flex
-        rounded-[4px]
+        rounded-md
         bg-orange-950
         text-orange-500
+        px-2 py-0.5 text-xs font-semibold
         '>
             <h1>Due</h1>
         </div>
@@ -62,9 +67,10 @@ function MemberTag(props) {
       return(
         <div className='
         flex
-        rounded-[4px]
+        rounded-md
         bg-gray-800
         text-gray-300
+        px-2 py-0.5 text-xs font-semibold
         '>
           <h1>Inactive</h1>
         </div>
@@ -73,9 +79,10 @@ function MemberTag(props) {
       return(
         <div className='
         flex
-        rounded-[4px]
+        rounded-md
         bg-red-950
         text-red-500
+        px-2 py-0.5 text-xs font-semibold
         '>
           <h1>Expired</h1>
         </div>

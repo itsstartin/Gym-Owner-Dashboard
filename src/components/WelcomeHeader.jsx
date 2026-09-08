@@ -12,17 +12,17 @@ function WelcomeHeader(props) {
     items-start 
     justify-between
     text-white
-    gap-0.5
+    gap-1
     '>
-        <button className='md:hidden' onClick={
+        <button aria-label='Open navigation' className='mb-2 rounded-lg border border-gray-800 bg-gray-900 p-2 text-gray-200 hover:bg-gray-800 md:hidden' onClick={
           ()=>{
             dispatch(sidebarOn())
           }
         }>  
             <Menu/>
         </button>
-        <h1 className='text-3xl font-extrabold'>{props.header ? props.header :'Welcome back, Admin'}</h1>
-        <p className='text-gray-400 text-[15px]'>{props.desc ? props.desc :'Here is what is happening at gym today'}</p>
+        <h1 className='text-2xl font-bold tracking-tight sm:text-3xl'>{props.header ? props.header :'Welcome back, Admin'}</h1>
+        <p className='text-sm text-gray-400 sm:text-[15px]'>{props.desc ? props.desc :'Here is what is happening at gym today'}</p>
     </div>
   )
 }

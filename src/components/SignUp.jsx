@@ -28,7 +28,11 @@ function SignUp() {
         }
         // call your signup API here
         try{
-          const { confirmPassword, ...payload } = form;
+          const payload = {
+            username: form.username,
+            email: form.email,
+            password: form.password,
+          };
           console.log(payload);
           const response = await axios.post('register/', payload)
           alert("User Created")

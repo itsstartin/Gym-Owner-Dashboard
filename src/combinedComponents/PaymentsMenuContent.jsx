@@ -41,15 +41,18 @@ function PaymentsMenuContent() {
       flex
       flex-col
       w-full
-      gap-4
+      gap-6
       min-h-screen
       max-h-fit
-      p-3
+      p-4
       sm:p-6
+      lg:p-8
       '>
           <div className='
           grid
-          grid-cols-2
+          grid-cols-1
+          gap-4
+          sm:grid-cols-2
   
           '>
               <WelcomeHeader header="Payments" desc="Track and manage member payments" />
@@ -73,7 +76,7 @@ function PaymentsMenuContent() {
           grid-cols-1
           sm:grid-cols-2
           lg:grid-cols-4
-          gap-4
+          gap-5
           '>
               <StatsCard icon={CircleAlert} title='Payments Overdue' num={`₹${calcData.overdue_amount || 0}`}/>
               <StatsCard icon={CircleDollarSign} title='Total Revenue This Month' num={`₹${calcData.month_revenue || 0}`} percentDiff={percentDiffData.month_revenue_percent_diff || 0} percentFrom='last month'/>
@@ -84,17 +87,14 @@ function PaymentsMenuContent() {
           grid
           grid-cols-1
           md:grid-cols-2
-          gap-4
+          gap-5
           '>
-              <div className='flex flex-col gap-2
-              outline-1
-            outline-gray-800
-            p-2 rounded-lg h-[380px]'>
-                <div className='flex flex-col'>
-                    <h1>Recent Transactions</h1>
-                    <p>Latest payment transactions from members</p>
+              <div className='flex flex-col gap-4 border border-gray-800 bg-gray-900/50 p-4 rounded-xl h-[400px]'>
+                <div className='flex flex-col gap-1'>
+                    <h1 className='font-semibold'>Recent Transactions</h1>
+                    <p className='text-sm text-gray-400'>Latest payment transactions from members</p>
                 </div>
-                <div className='flex flex-col gap-2 h-[300px] overflow-y-auto p-1'>
+                <div className='flex flex-col gap-2 h-[310px] overflow-y-auto pr-1'>
                 {
                     recentPayments.map((obj)=> {
                         //    const data = handleMember(obj.member)
@@ -104,15 +104,12 @@ function PaymentsMenuContent() {
                 </div>
 
               </div>
-              <div className='flex flex-col gap-3 
-              outline-1
-            outline-gray-800
-            p-2 rounded-lg h-[380px]'>
-                <div className='flex flex-col'>
-                    <h1>Overdue Payments</h1>
-                    <p>Members with outstanding payments</p>
+              <div className='flex flex-col gap-4 border border-gray-800 bg-gray-900/50 p-4 rounded-xl h-[400px]'>
+                <div className='flex flex-col gap-1'>
+                    <h1 className='font-semibold'>Overdue Payments</h1>
+                    <p className='text-sm text-gray-400'>Members with outstanding payments</p>
                 </div>
-                <div className='flex flex-col gap-2 h-[300px] overflow-y-auto p-1'>
+                <div className='flex flex-col gap-2 h-[310px] overflow-y-auto pr-1'>
                 {
                 overdueMembers.map((obj)=> {
                 //    const data = handleMember(obj.member)

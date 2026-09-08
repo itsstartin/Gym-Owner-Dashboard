@@ -8,18 +8,25 @@ function IconDescBtn(props) {
   
   return (
     <button
-    onClick={OnClick ? OnClick : null}
+    type={props.type || 'button'}
+    onClick={OnClick ? OnClick : undefined}
+    aria-label={props.label}
     className={`
     flex
-    h-7.5
-    
-    p-1.5
-    rounded-[8px]
+    min-h-10
+    px-3
+    py-2
+    rounded-lg
     justify-start
     items-center
-    ${props.sb && props.label!==currentPageState ? 'hover:bg-gray-800' : 'bg-green-800 hover:bg-green-900'}
+    transition-colors
+    duration-150
+    focus-visible:outline-2
+    focus-visible:outline-offset-2
+    focus-visible:outline-green-500
+    ${props.sb && props.label!==currentPageState ? 'text-gray-300 hover:bg-gray-800 hover:text-white' : 'bg-green-700 shadow-sm shadow-green-950 hover:bg-green-600'}
     text-[14px]
-    font-bold
+    font-semibold
     text-white
     gap-2
     `}>
@@ -37,7 +44,7 @@ function IconDescBtn(props) {
       <Icon
         size={16}
         className='
-        m-2
+        mr-1
         '
         />
         <p className='text-[13px]'>{props.label}</p>

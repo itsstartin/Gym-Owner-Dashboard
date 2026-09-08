@@ -39,9 +39,10 @@ function MemberMenuContent() {
     w-full
     min-h-screen
     max-h-fit
-    gap-4
-    p-3
+    gap-6
+    p-4
     sm:p-6
+    lg:p-8
     '>
          <div className='
           grid
@@ -71,10 +72,9 @@ function MemberMenuContent() {
         grid-cols-1
         sm:grid-cols-2
         lg:grid-cols-3
-        gap-4
+        gap-5
         overflow-y-auto
-        p-1
-        h-screen
+        pb-8
         content-start
         
         '>
@@ -92,7 +92,7 @@ function MemberMenuContent() {
             items-start
             gap-2
             '>
-              <h1 className='text-white text-2xl font-bold'>No members found</h1>
+              <h1 className='text-white text-xl font-bold'>No members found</h1>
               <p className='text-gray-400 text-sm'>Please try again with different filters or search</p>
             </div>
             }

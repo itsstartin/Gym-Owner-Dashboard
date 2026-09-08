@@ -14,18 +14,23 @@ function SideBar() {
     flex
     flex-col
     self-start
+    z-30
     fixed
     ${sidebarState ? 'translate-x-0' :'-translate-x-full'}
     md:sticky md:translate-x-0
     top-0
     justify-between
-    min-w-55
-    max-w-55
-    p-2
+    min-w-60
+    max-w-60
+    p-3
     h-screen
-    bg-gray-900
-    outline-1
-  outline-gray-800
+    bg-gray-900/95
+    border-r
+    border-gray-800
+    shadow-2xl
+    transition-transform
+    duration-200
+    ease-out
     `}>
         <GymIcon/>
         <div className='
@@ -33,7 +38,7 @@ function SideBar() {
         flex-col
         justify-start
         h-full
-        gap-2
+        gap-1.5
         w-full
         
         
@@ -48,7 +53,7 @@ function SideBar() {
         flex
         flex-col
         justify-center
-        gap-2
+        gap-1.5
         w-full
         '>
             <IconDescBtn sb icon={Bell} label='Notifications' onClick={()=>dispatch(notificationsOn())}/>

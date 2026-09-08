@@ -55,34 +55,39 @@ function AddMemberForm() {
     <div className='
     fixed
     inset-0
+    z-40
     flex
     items-center
     justify-center
-    bg-white/40
+    bg-black/70
+    p-4
+    backdrop-blur-sm
     '>
     
     <form onSubmit={handleSubmit} className='
     flex
     flex-col
-    gap-2
-    justify-center
-    items-start
-    bg-gray-950
+    w-full
+    max-w-lg
+    gap-4
+    bg-gray-900
     text-white
-    p-4
-    rounded-[8px]
+    p-5
+    rounded-xl
+    border
+    border-gray-800
+    shadow-2xl
     '>
-        <h1>Add New Member</h1>
-        <p>Create a new member profile and assign membership type</p>
+        <div><h1 className='text-xl font-bold'>Add New Member</h1><p className='mt-1 text-sm text-gray-400'>Create a profile and assign a membership plan.</p></div>
         <div className="
         flex
         flex-col
         items-start
         w-full
         ">
-            <h1>Full Name</h1>
+            <label className='mb-1 text-sm font-medium text-gray-300'>Full Name</label>
             <input name='name' type='text' placeholder='First Name' onChange={(e)=>handleChange(e)}
-            value={memberForm.name}>
+            value={memberForm.name} required className='w-full rounded-lg border border-gray-700 bg-gray-950 px-3 py-2.5 text-sm outline-none focus:border-green-600'>
             </input>
         </div>
         <div className="
@@ -91,9 +96,9 @@ function AddMemberForm() {
         items-start
         w-full
         ">
-            <h1>Email</h1>
+            <label className='mb-1 text-sm font-medium text-gray-300'>Email</label>
             <input name='email' type='email' placeholder='Email' onChange={(e)=>handleChange(e)} 
-            value={memberForm.email}>
+            value={memberForm.email} required className='w-full rounded-lg border border-gray-700 bg-gray-950 px-3 py-2.5 text-sm outline-none focus:border-green-600'>
             </input>
         </div>
         <div className="
@@ -102,23 +107,24 @@ function AddMemberForm() {
         items-start
         w-full
         ">
-            <h1>Phone Number</h1>
+            <label className='mb-1 text-sm font-medium text-gray-300'>Phone Number</label>
             <input name='phone_number' type='number' placeholder='Phone Number'onChange={(e)=>handleChange(e)} 
-            value={memberForm.phone_number}>
+            value={memberForm.phone_number} required className='w-full rounded-lg border border-gray-700 bg-gray-950 px-3 py-2.5 text-sm outline-none focus:border-green-600'>
             </input>
         </div>
-        <select value={memberForm.membership_plan_id} name='membership_plan_id' className='w-full bg-gray-950' onChange={(e)=>handleChange(e)}>
+        <label className='flex w-full flex-col gap-1 text-sm font-medium text-gray-300'>Membership Plan
+        <select value={memberForm.membership_plan_id} name='membership_plan_id' required className='w-full rounded-lg border border-gray-700 bg-gray-950 px-3 py-2.5 text-sm font-normal outline-none focus:border-green-600' onChange={(e)=>handleChange(e)}>
             <option value=''>Select Plan</option>
             {plans ? 
             plans.map((obj)=>{
                 return <option value={obj.id} key={obj.id}>{obj.name} - {obj.plan_price}</option>
             })
             :''}
-        </select>
-        <div>
-            <h1>Membership Start Date</h1>
+        </select></label>
+        <div className='w-full'>
+            <label className='mb-1 block text-sm font-medium text-gray-300'>Membership Start Date</label>
             <input type='date' value={memberForm.membership_start_date}
-             name='membership_start_date' onChange={(e)=>handleChange(e)}>
+             name='membership_start_date' required className='w-full rounded-lg border border-gray-700 bg-gray-950 px-3 py-2.5 text-sm outline-none focus:border-green-600' onChange={(e)=>handleChange(e)}>
             </input>
         </div>
         

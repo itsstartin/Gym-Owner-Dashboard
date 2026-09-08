@@ -60,34 +60,39 @@ function AddPaymentForm() {
     <div className='
     fixed
     inset-0
+    z-40
     flex
     items-center
     justify-center
-    bg-white/40
+    bg-black/70
+    p-4
+    backdrop-blur-sm
     '>
     
     <form onSubmit={handleSubmit} className='
     flex
     flex-col
-    gap-2
-    justify-center
-    items-start
-    bg-gray-950
+    w-full
+    max-w-lg
+    gap-4
+    bg-gray-900
     text-white
-    p-4
-    rounded-[8px]
+    p-5
+    rounded-xl
+    border
+    border-gray-800
+    shadow-2xl
     '>
-        <h1>Add New Payment</h1>
-        <p>Add a payment and assign payment type</p>
+        <div><h1 className='text-xl font-bold'>Add New Payment</h1><p className='mt-1 text-sm text-gray-400'>Record a member payment and its method.</p></div>
         <div className="
         flex
         flex-col
         items-start
         w-full
         ">
-            <h1>Payment From:</h1>
+            <label className='mb-1 text-sm font-medium text-gray-300'>Payment From</label>
             <select name='member' onChange={(e)=>handleChange(e)}
-            className='w-full bg-gray-950'
+            required className='w-full rounded-lg border border-gray-700 bg-gray-950 px-3 py-2.5 text-sm outline-none focus:border-green-600'
             value={paymentForm.member}>
                 <option value=''>Select Member</option>
                 {members ? 
@@ -103,13 +108,13 @@ function AddPaymentForm() {
         items-start
         w-full
         ">
-            <h1>Enter the Amount</h1>
+            <label className='mb-1 text-sm font-medium text-gray-300'>Amount</label>
             <CurrencyInput name='amount' placeholder='Please Enter the amount'
             onChange={(e)=>handleChange(e)} 
-            value={paymentForm.amount}
+            value={paymentForm.amount} required className='w-full rounded-lg border border-gray-700 bg-gray-950 px-3 py-2.5 text-sm outline-none focus:border-green-600'
             ></CurrencyInput>
         </div>
-        <select value={paymentForm.payment_type} name='payment_type' className='w-full bg-gray-950' onChange={(e)=>handleChange(e)}>
+        <select value={paymentForm.payment_type} name='payment_type' required className='w-full rounded-lg border border-gray-700 bg-gray-950 px-3 py-2.5 text-sm outline-none focus:border-green-600' onChange={(e)=>handleChange(e)}>
             <option value="">Select Payment Type</option>
             <option value='cash'>Cash</option>
             <option value='card'>Card</option>

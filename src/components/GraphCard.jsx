@@ -6,17 +6,23 @@ function GraphCard(props) {
   return (
     <div className='
     flex
+    flex-col
     justify-center
-    items-center
+    items-stretch
     w-full
-    p-6
-    bg-gray-900
-    rounded-[8px]
+    gap-4
+    p-5
+    bg-gray-900/80
+    rounded-xl
     text-white
-    outline-1
-    outline-gray-800
-    hover:outline-green-900
+    border
+    border-gray-800
+    shadow-sm
+    shadow-black/20
     '>
+      {
+      props.title && <div><h2 className='font-semibold'>{props.title}</h2><p className='mt-0.5 text-sm text-gray-400'>Performance overview</p></div>
+      }
       {
       props.obj ?
         <div className='
@@ -24,7 +30,7 @@ function GraphCard(props) {
         justify-center
         items-center
         w-full
-        h-70
+        h-72
         '>
         {
           props.Datasets ?

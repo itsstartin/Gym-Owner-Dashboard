@@ -44,33 +44,36 @@ function MemberCard(props) {
     flex-col
     bg-gray-900
     text-white
-    rounded-[8px]
+    rounded-xl
     h-fit
-    gap-2
-    p-2
-    outline-1
-    outline-gray-800
-    hover:outline-green-900
+    gap-4
+    p-4
+    border
+    border-gray-800
+    shadow-sm
+    shadow-black/20
+    transition-colors
+    hover:border-green-900
     '>
         <div className='
         flex
-        gap-2
+        gap-3
         '>
             
-            <User size={40}/>
+            <div className='rounded-lg bg-gray-800 p-2 text-green-500'><User size={22}/></div>
             <div className='
             flex
             flex-col
             w-full
             '>  
-                <h1>{props.member.name}</h1>
-                <p>{props.member.email}</p>
+                <h1 className='font-semibold'>{props.member.name}</h1>
+                <p className='truncate text-sm text-gray-400'>{props.member.email}</p>
             </div>
             <div className='flex items-start gap-1'>
-              <button type='button' aria-label='Attendance history' title='Attendance history' className='rounded p-1 hover:bg-gray-800 hover:outline-1' onClick={()=>setHistoryType('attendance')}>
+              <button type='button' aria-label='Attendance history' title='Attendance history' className='rounded-md p-1.5 text-gray-400 hover:bg-gray-800 hover:text-white' onClick={()=>setHistoryType('attendance')}>
                 <CalendarDays size={18}/>
               </button>
-              <button type='button' aria-label='Payment history' title='Payment history' className='rounded p-1 hover:bg-gray-800 hover:outline-1' onClick={()=>setHistoryType('payment')}>
+              <button type='button' aria-label='Payment history' title='Payment history' className='rounded-md p-1.5 text-gray-400 hover:bg-gray-800 hover:text-white' onClick={()=>setHistoryType('payment')}>
                 <ReceiptIndianRupee size={18}/>
               </button>
               {markAttendanceState ?
@@ -96,13 +99,13 @@ function MemberCard(props) {
         flex
         items-center
         '>
-            <p>Joined:</p>
+            <p className='text-sm text-gray-400'>Joined</p>
             <div className='
             flex
             justify-end
             w-full
             '>
-                <p>{new Date(props.member.membership_start_date).toLocaleDateString()}</p>
+                <p className='text-sm'>{new Date(props.member.membership_start_date).toLocaleDateString()}</p>
             </div>
 
         </div>
@@ -110,13 +113,13 @@ function MemberCard(props) {
         flex
         items-center
         '>
-            <p>Phone:</p>
+            <p className='text-sm text-gray-400'>Phone</p>
             <div className='
             flex
             justify-end
             w-full
             '>
-            <p>{props.member.phone_number}</p>
+            <p className='text-sm'>{props.member.phone_number}</p>
             </div>
         </div>
         <div className='
@@ -131,11 +134,13 @@ function MemberCard(props) {
             justify-center
             w-full
             items-center
-            bg-black
+            bg-gray-800
             gap-2
-            rounded-[8px]
-            p-1
-            hover:outline-1
+            rounded-lg
+            py-2
+            text-sm
+            font-medium
+            hover:bg-gray-700
             '
             onClick={()=>setViewProfile(props.member)}
             >
@@ -149,11 +154,13 @@ function MemberCard(props) {
             justify-center
             w-full
             items-center
-            bg-black
+            bg-gray-800
             gap-2
-            rounded-[8px]
-            p-1
-            hover:outline-1
+            rounded-lg
+            py-2
+            text-sm
+            font-medium
+            hover:bg-gray-700
             '
             onClick={()=>setUpdateMember(props.member)}
             >

@@ -1,55 +1,78 @@
-from datetime import date, timedelta
-from django.db.models import Sum
+from datetime import date, datetime, time, timedelta
+
+from django.db.models import Count, Sum
+from django.db.models.functions import TruncDate, TruncMonth
+from django.utils import timezone
+
 from members.models import Attendance, RecentPayment
 
+
 def calc_percent_diff_data(user):
-    month_revenue_percent_diff = calc_month_revenue_percent_diff(user)
-    today_att_percent_diff = calc_today_att_percent_diff(user)
     return {
-        "month_revenue_percent_diff":month_revenue_percent_diff,
-        "today_att_percent_diff":today_att_percent_diff
+        "month_revenue_percent_diff": calc_month_revenue_percent_diff(user),
+        "today_att_percent_diff": calc_today_att_percent_diff(user),
     }
 
+
 def calc_month_revenue_percent_diff(user):
-    today = date.today()  
-    totals = []   
-    year = today.year
-    month = today.month
-    for _ in range(2):
-        month_start = date(year, month, 1)
-        if month == 12:
-            next_month_start = date(year + 1, 1, 1)
-        else:
-            next_month_start = date(year, month + 1, 1)
-        total = (
-            RecentPayment.objects
-            .filter(
+    today = date.today()
+    current_month = date(today.year, today.month, 1)
+    previous_month = _previous_month_start(current_month)
+    next_month = _next_month_start(current_month)
+    totals = {
+        row["month"].date(): row["total"]
+        for row in (
+            RecentPayment.objects.filter(
                 user=user,
-                created_at__gte=month_start,
-                created_at__lt=next_month_start,
+                created_at__gte=_day_start(previous_month),
+                created_at__lt=_day_start(next_month),
             )
-            .aggregate(total=Sum('amount'))['total']
-            or 0
+            .annotate(month=TruncMonth("created_at"))
+            .values("month")
+            .annotate(total=Sum("amount"))
         )
-        totals.append(total)
-        month -= 1
-        if month == 0:
-            month = 12
-            year -= 1
-    totals.reverse()
-    if totals[0] == 0:
+    }
+    previous_total = totals.get(previous_month, 0)
+    current_total = totals.get(current_month, 0)
+    if previous_total == 0:
         return 0
-    month_revenue_percent_diff = ((totals[1] - totals[0]) / totals[0]) * 100
-    return f"{month_revenue_percent_diff:.2f}"
+    return f"{((current_total - previous_total) / previous_total) * 100:.2f}"
+
 
 def calc_today_att_percent_diff(user):
     today = date.today()
-    attendances = Attendance.objects.filter(user=user,date__date=today)
-    today_att_count = attendances.count()
     yesterday = today - timedelta(days=1)
-    attendances_yesterday = Attendance.objects.filter(user=user,date__date=yesterday)
-    yesterday_att_count = attendances_yesterday.count()
-    if yesterday_att_count == 0:
+    counts = {
+        row["day"]: row["total"]
+        for row in (
+            Attendance.objects.filter(
+                user=user,
+                date__gte=_day_start(yesterday),
+                date__lt=_day_start(today + timedelta(days=1)),
+            )
+            .annotate(day=TruncDate("date"))
+            .values("day")
+            .annotate(total=Count("id"))
+        )
+    }
+    yesterday_count = counts.get(yesterday, 0)
+    today_count = counts.get(today, 0)
+    if yesterday_count == 0:
         return 0
-    today_att_percent_diff = ((today_att_count - yesterday_att_count) / yesterday_att_count) * 100
-    return f"{today_att_percent_diff:.2f}"
+    return f"{((today_count - yesterday_count) / yesterday_count) * 100:.2f}"
+
+
+def _previous_month_start(month_start):
+    if month_start.month == 1:
+        return date(month_start.year - 1, 12, 1)
+    return date(month_start.year, month_start.month - 1, 1)
+
+
+def _next_month_start(month_start):
+    if month_start.month == 12:
+        return date(month_start.year + 1, 1, 1)
+    return date(month_start.year, month_start.month + 1, 1)
+
+
+def _day_start(day):
+    return timezone.make_aware(datetime.combine(day, time.min))

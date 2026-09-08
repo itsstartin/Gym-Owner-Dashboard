@@ -7,6 +7,7 @@ from rest_framework.decorators import api_view , permission_classes
 from rest_framework.response import Response
 from rest_framework import status
 from django.utils import timezone
+from django.db.models import Max
 from members.services.calc_graph import calc_graph
 from members.services.percent_stat_diff import calc_percent_diff_data
 from members.services.member_access import send_mail_overdue_member, send_member_link
@@ -38,13 +39,21 @@ def current_user(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_members(request):
-    members = Member.objects.filter(user=request.user)
+    members = (
+        Member.objects.filter(user=request.user)
+        .select_related("membership_plan")
+        .annotate(last_attendance_date=Max("attendance__date"))
+    )
     serializer = MemberSerializer(members, many=True)
     return Response(serializer.data)
 
 @api_view(['GET'])
 def get_member(request , id):
-    member = Member.objects.get(id=id)
+    member = (
+        Member.objects.select_related("membership_plan")
+        .annotate(last_attendance_date=Max("attendance__date"))
+        .get(id=id)
+    )
     serializer = MemberSerializer(member)
     return Response(serializer.data)
 
@@ -56,14 +65,22 @@ def get_plans(request):
 
 @api_view(['GET'])
 def get_payments(request):
-    payments = RecentPayment.objects.filter(user=request.user).order_by('-created_at')
+    payments = (
+        RecentPayment.objects.filter(user=request.user)
+        .select_related("member__membership_plan")
+        .order_by('-created_at')
+    )
     serializer = RecentPaymentSerializer(payments, many=True)
     return Response(serializer.data)
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_overdue_members(request):
-    members = Member.objects.filter(user=request.user)
+    members = (
+        Member.objects.filter(user=request.user)
+        .select_related("membership_plan")
+        .annotate(last_attendance_date=Max("attendance__date"))
+    )
     overdue_list = []
     for member in members:
         data = calc_member_overdue(member)
@@ -270,8 +287,13 @@ def send_attendance_mail_member(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def add_notification(request):
-    check_inactive_members(request.user)
-    check_expired_members(request.user)
+    members = list(
+        Member.objects.filter(user=request.user)
+        .select_related("membership_plan")
+        .annotate(last_attendance_date=Max("attendance__date"))
+    )
+    check_inactive_members(request.user, members=members)
+    check_expired_members(request.user, members=members)
     return Response({"msg":"notification processed"})
 
 @api_view(['GET'])

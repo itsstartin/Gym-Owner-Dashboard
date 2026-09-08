@@ -1,6 +1,9 @@
-from django.db.models import Count, Sum
+from datetime import date, datetime, time, timedelta
+
+from django.db.models import Count, Max, Q, Sum
+from django.utils import timezone
+
 from members.models import Attendance, Member, RecentPayment
-from datetime import date , timedelta
 
 
 def get_member_payment_status(member, today=None):
@@ -20,10 +23,17 @@ def get_member_payment_status(member, today=None):
     if 0 < (current_validity - expected_validity) < 4:
         status = "due"
     elif expected_validity > current_validity:
-        attended_after_membership_end = Attendance.objects.filter(
-            member=member,
-            date__date__gt=end_date
-        ).exists()
+        if hasattr(member, "last_attendance_date"):
+            last_attendance_date = member.last_attendance_date
+            attended_after_membership_end = (
+                last_attendance_date is not None
+                and last_attendance_date.date() > end_date
+            )
+        else:
+            attended_after_membership_end = Attendance.objects.filter(
+                member=member,
+                date__date__gt=end_date
+            ).exists()
         status = "expired" if attended_after_membership_end else "inactive"
 
         if status == "expired":
@@ -39,25 +49,79 @@ def get_member_payment_status(member, today=None):
 
 
 def calc_data(user):
-    total_payments_count = calc_payment_count(user)
-    total_revenue = calc_total_revenue(user)
-    monthly_revenue = calc_monthly_revenue(user)
-    total_due_amount=calc_overdue_amount(user)
-    total_advance_amount=calc_advance_amount(user)
-    month_att_avg = calc_month_att_avg(user)
-    members_count = calc_members_count(user)
-    today_att_count = calc_att_today(user)
-    calc_data = {
-        "payment_count":total_payments_count,
-        "total_revenue": total_revenue,
-        "month_revenue": monthly_revenue,
-        "overdue_amount":total_due_amount,
-        "advance_amount":total_advance_amount,
-        "month_att_avg":month_att_avg,
-        "members_count":members_count,
-        "today_att_count":today_att_count,
+    """Return dashboard statistics with three database queries, regardless of member count."""
+    today = date.today()
+    month_start_day = date(today.year, today.month, 1)
+    next_month_start_day = _next_month_start(month_start_day)
+    month_start = _day_start(month_start_day)
+    next_month_start = _day_start(next_month_start_day)
+    today_start = _day_start(today)
+    tomorrow_start = _day_start(today + timedelta(days=1))
+
+    payment_totals = RecentPayment.objects.filter(user=user).aggregate(
+        payment_count=Count("id"),
+        total_revenue=Sum("amount"),
+        month_revenue=Sum(
+            "amount",
+            filter=Q(created_at__gte=month_start, created_at__lt=next_month_start),
+        ),
+    )
+    attendance_totals = Attendance.objects.filter(user=user).aggregate(
+        month_count=Count(
+            "id",
+            filter=Q(date__gte=month_start, date__lt=next_month_start),
+        ),
+        today_count=Count(
+            "id",
+            filter=Q(date__gte=today_start, date__lt=tomorrow_start),
+        ),
+    )
+    members = list(
+        Member.objects.filter(user=user)
+        .select_related("membership_plan")
+        .annotate(last_attendance_date=Max("attendance__date"))
+    )
+    overdue_amount, advance_amount = _calc_member_balance_totals(members, today)
+
+    return {
+        "payment_count": payment_totals["payment_count"],
+        "total_revenue": payment_totals["total_revenue"],
+        "month_revenue": payment_totals["month_revenue"],
+        "overdue_amount": overdue_amount,
+        "advance_amount": advance_amount,
+        "month_att_avg": f"{attendance_totals['month_count'] / today.day:.2f}",
+        "members_count": len(members),
+        "today_att_count": attendance_totals["today_count"],
     }
-    return calc_data
+
+
+def _day_start(day):
+    return timezone.make_aware(datetime.combine(day, time.min))
+
+
+def _next_month_start(month_start):
+    if month_start.month == 12:
+        return date(month_start.year + 1, 1, 1)
+    return date(month_start.year, month_start.month + 1, 1)
+
+
+def _calc_member_balance_totals(members, today):
+    total_due_amount = 0.0
+    total_advance_amount = 0.0
+
+    for member in members:
+        status_data = get_member_payment_status(member, today=today)
+        if status_data["status"] == "expired":
+            total_due_amount += float(status_data["overdue_amount"])
+
+        current_validity = int((member.total_cash_paid / member.membership_plan.plan_price) * 30)
+        expected_validity = (today - member.membership_start_date).days
+        if expected_validity < current_validity:
+            total_advance_amount += (
+                (current_validity - expected_validity) / 30
+            ) * member.membership_plan.plan_price
+
+    return f"{total_due_amount:.2f}", f"{total_advance_amount:.2f}"
 
 def calc_total_revenue(user):
     payments = RecentPayment.objects.filter(user=user)
@@ -110,7 +174,7 @@ def calc_member_period_payment_total(user, member):
     total_cash_paid = RecentPayment.objects.filter(
         user=user,
         member=member,
-        created_at__date__gte=member.membership_start_date
+        created_at__gte=_day_start(member.membership_start_date),
     ).aggregate(total=Sum('amount'))['total'] or 0.0
     return total_cash_paid
 

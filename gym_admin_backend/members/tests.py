@@ -1,4 +1,5 @@
 from django.test import TestCase
+from django.db.models import Max
 from django.contrib.auth.models import User
 from django.utils import timezone
 from datetime import date, datetime, time, timedelta
@@ -7,8 +8,9 @@ from rest_framework.test import APIRequestFactory, force_authenticate
 
 from members.models import Attendance, Member, MembershipPlan, RecentPayment
 from members.serializer import MemberSerializer
-from members.services.payment_calc import calc_member_overdue, calc_overdue_amount
-from members.views import create_payment, update_member
+from members.services.payment_calc import calc_data, calc_member_overdue, calc_overdue_amount
+from members.services.calc_graph import calc_graph
+from members.views import create_payment, get_payments, update_member
 
 
 class MemberStatusTests(TestCase):
@@ -180,3 +182,95 @@ class MemberStatusTests(TestCase):
         self.assertEqual(member.email, "expired-contact-new@example.com")
         self.assertEqual(member.phone_number, "+910000000000")
         self.assertEqual(member.membership_plan, self.plan)
+
+    def test_member_serialization_uses_one_query_for_annotated_member_list(self):
+        active_start_date = date.today() - timedelta(days=10)
+        self.create_member(
+            "Efficient Member One",
+            "+910000000001",
+            "efficient-one@example.com",
+            membership_start_date=active_start_date,
+        )
+        self.create_member(
+            "Efficient Member Two",
+            "+910000000002",
+            "efficient-two@example.com",
+            membership_start_date=active_start_date,
+        )
+
+        members = (
+            Member.objects.filter(user=self.user)
+            .select_related("membership_plan")
+            .annotate(last_attendance_date=Max("attendance__date"))
+        )
+        with self.assertNumQueries(1):
+            data = MemberSerializer(members, many=True).data
+
+        self.assertEqual(len(data), 2)
+        self.assertEqual({member["status"] for member in data}, {"active"})
+
+    def test_graph_uses_grouped_queries_and_preserves_expected_datasets(self):
+        member = self.create_member(
+            "Graph Member",
+            "+910000000003",
+            "graph@example.com",
+            membership_start_date=date.today(),
+        )
+        RecentPayment.objects.create(
+            user=self.user,
+            member=member,
+            amount=500,
+            payment_type="upi",
+        )
+        self.mark_attendance(member, date.today())
+
+        with self.assertNumQueries(5):
+            graph = calc_graph(self.user)
+
+        self.assertEqual(len(graph["revenue"]["labels"]), 6)
+        self.assertEqual(len(graph["weekly_attendance"]["data"]), 7)
+        self.assertEqual(len(graph["hourly_attendance"]["datasets"]), 2)
+        self.assertEqual(graph["member_growth"]["datasets"][0]["name"], "Basic")
+
+    def test_payment_list_includes_member_summary_without_per_payment_queries(self):
+        member = self.create_member(
+            "Payment Summary Member",
+            "+910000000004",
+            "payment-summary@example.com",
+        )
+        RecentPayment.objects.create(
+            user=self.user,
+            member=member,
+            amount=300,
+            payment_type="cash",
+        )
+        request = self.factory.get("/members/getpayments")
+        force_authenticate(request, user=self.user)
+
+        with self.assertNumQueries(1):
+            response = get_payments(request)
+
+        self.assertEqual(response.data[0]["member_name"], member.name)
+        self.assertEqual(response.data[0]["membership_plan_name"], self.plan.name)
+
+    def test_dashboard_calculation_uses_fixed_query_count(self):
+        member = self.create_member(
+            "Dashboard Member",
+            "+910000000005",
+            "dashboard@example.com",
+            membership_start_date=date.today(),
+        )
+        RecentPayment.objects.create(
+            user=self.user,
+            member=member,
+            amount=300,
+            payment_type="cash",
+        )
+        self.mark_attendance(member, date.today())
+
+        with self.assertNumQueries(3):
+            data = calc_data(self.user)
+
+        self.assertEqual(data["members_count"], 1)
+        self.assertEqual(data["payment_count"], 1)
+        self.assertEqual(data["today_att_count"], 1)

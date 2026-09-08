@@ -2,7 +2,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
 from rest_framework import serializers
 
-from members.services.payment_calc import calc_member_overdue, get_member_payment_status
+from members.services.payment_calc import get_member_payment_status
 from . models import Attendance, Member, Notification, RecentPayment, MembershipPlan
 
 class UserSerializer(serializers.ModelSerializer):
@@ -42,20 +42,32 @@ class MemberSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             'user': {'read_only': True}
         }
+
+    def _payment_status(self, obj):
+        """Calculate derived membership values once for each serialized member."""
+        if not hasattr(obj, "_serialized_payment_status"):
+            obj._serialized_payment_status = get_member_payment_status(obj)
+        return obj._serialized_payment_status
+
     def get_status(self, obj):
-        data=get_member_payment_status(obj)
-        return data["status"]
+        return self._payment_status(obj)["status"]
+
     def get_membership_end_date(self,obj):
-        data=calc_member_overdue(obj)
-        return data["membership_end_date"]
+        return self._payment_status(obj)["membership_end_date"]
+
     def get_overdue_days(self,obj):
-        data=calc_member_overdue(obj)
-        return data["overdue_days"]
+        return self._payment_status(obj)["overdue_days"]
+
     def get_overdue_amount(self,obj):
-        data=calc_member_overdue(obj)
-        return data["overdue_amount"]
+        return self._payment_status(obj)["overdue_amount"]
 
 class RecentPaymentSerializer(serializers.ModelSerializer):
+    member_name = serializers.CharField(source='member.name', read_only=True)
+    membership_plan_name = serializers.CharField(
+        source='member.membership_plan.name',
+        read_only=True,
+    )
+
     class Meta:
         model = RecentPayment
         fields = '__all__'

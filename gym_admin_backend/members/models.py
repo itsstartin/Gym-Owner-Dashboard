@@ -34,6 +34,11 @@ class Member(models.Model):
 
     def __str__(self) :
         return self.name
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['user', 'membership_start_date'], name='member_user_start_idx'),
+        ]
     
 
 class RecentPayment(models.Model):
@@ -47,6 +52,12 @@ class RecentPayment(models.Model):
         )
     created_at=models.DateTimeField(default=timezone.now,null=True)
 
+    class Meta:
+        indexes = [
+            models.Index(fields=['user', 'created_at'], name='payment_user_created_idx'),
+            models.Index(fields=['user', 'member', 'created_at'], name='payment_user_member_idx'),
+        ]
+
 class Notification(models.Model):
     user = models.ForeignKey(User,on_delete=models.CASCADE)
     member=models.ForeignKey('Member',on_delete=models.CASCADE, null=True, blank=True)
@@ -57,6 +68,12 @@ class Notification(models.Model):
 
     def __str__(self):
         return self.message
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['user', 'type', 'created_at'], name='notify_user_type_created_idx'),
+            models.Index(fields=['user', 'member', 'type'], name='notify_user_member_type_idx'),
+        ]
 
 
 class MembershipPlan(models.Model):
@@ -73,3 +90,9 @@ class Attendance(models.Model):
 
     def __str__(self):
         return f"{self.member.name} - {self.date}"
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['user', 'date'], name='attendance_user_date_idx'),
+            models.Index(fields=['member', 'date'], name='attendance_member_date_idx'),
+        ]

@@ -1,10 +1,11 @@
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { lazy, Suspense, useCallback, useEffect, useState } from 'react'
 import StatsCard from '../components/StatsCard'
 import WelcomeHeader from '../components/WelcomeHeader'
 import { DollarSign, Users } from 'lucide-react'
 import axios from '../axios'
-import ReportGraphs from '../components/ReportGraphs'
 import { ErrorState, LoadingState } from '../components/AsyncState'
+
+const ReportGraphs = lazy(() => import('../components/ReportGraphs'))
 
 function ReportsMenuContent() {
     const [calcData,setCalcData]=useState({})
@@ -56,7 +57,9 @@ function ReportsMenuContent() {
             <StatsCard icon={DollarSign} title='Total Revenue' num={'\u20B9' + (calcData.total_revenue || 0)}/>
             <StatsCard icon={Users} title='Avg. Daily Attendance' num={calcData.month_att_avg || 0}/>
           </div>
-          <ReportGraphs graphData={graphData}/>
+          <Suspense fallback={<LoadingState message="Loading report charts..." />}>
+            <ReportGraphs graphData={graphData}/>
+          </Suspense>
           </>}
       </div>
     )

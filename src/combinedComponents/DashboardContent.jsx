@@ -1,13 +1,14 @@
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { lazy, Suspense, useCallback, useEffect, useState } from 'react'
 import WelcomeHeader from '../components/WelcomeHeader'
 import IconDescBtn from '../components/IconDescBtn'
 import StatsCard from '../components/StatsCard'
-import GraphCard from '../components/GraphCard'
 import { ChartLine, IndianRupee, Plus, Users } from 'lucide-react'
 import { useDispatch } from 'react-redux'
 import { addMemberOn } from '../features/currentPageSlice'
 import axios from '../axios'
 import { ErrorState, LoadingState } from '../components/AsyncState'
+
+const GraphCard = lazy(() => import('../components/GraphCard'))
 
 function DashboardContent() {
     const dispatch = useDispatch()
@@ -89,15 +90,17 @@ function DashboardContent() {
             <StatsCard icon={IndianRupee} title='Revenue This Month' num={'\u20B9' + (calcData.month_revenue || 0)} percentDiff={percentDiffData.month_revenue_percent_diff || 0} percentFrom='last month'/>
             <StatsCard icon={ChartLine} title="Today's Attendance" num={calcData.today_att_count || 0} percentDiff={percentDiffData.today_att_percent_diff || 0} percentFrom='yesterday'/>
         </div>
-        <div className='
-        grid
-        grid-cols-1
-        lg:grid-cols-2
-        gap-5
-        '>
-            <GraphCard title='Revenue' obj={graphData.revenue} Bar/>
-            <GraphCard title='Weekly Attendance' obj={graphData.weekly_attendance}/>
-        </div>
+        <Suspense fallback={<LoadingState message="Loading dashboard charts..." />}>
+          <div className='
+          grid
+          grid-cols-1
+          lg:grid-cols-2
+          gap-5
+          '>
+              <GraphCard title='Revenue' obj={graphData.revenue} Bar/>
+              <GraphCard title='Weekly Attendance' obj={graphData.weekly_attendance}/>
+          </div>
+        </Suspense>
         </>}
     </div>
   )

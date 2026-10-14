@@ -1,20 +1,22 @@
-import React from 'react'
+import { lazy, Suspense } from 'react'
 import {Routes, Route} from 'react-router'
 import SideBar from '../combinedComponents/SideBar'
-import DashboardContent from '../combinedComponents/DashboardContent'
 import { useSelector } from 'react-redux'
-import MemberMenuContent from '../combinedComponents/MemberMenuContent'
-import AddMemberForm from '../components/AddMemberForm'
-import PaymentsMenuContent from '../combinedComponents/PaymentsMenuContent'
-import ReportsMenuContent from '../combinedComponents/ReportsMenuContent'
-import AddPaymentForm from '../components/AddPaymentForm'
-import LoginComp from '../components/LoginComp'
-import SignUp from '../components/SignUp'
 import ProtectedRoute from '../features/ProtectedRoute'
-import LogoutBox from '../components/LogoutBox'
-import SettingsMenuContent from '../combinedComponents/SettingsMenuContent'
-import MemberAccess from '../combinedComponents/MemberAccess'
-import NotificationMenuContent from '../combinedComponents/NotificationMenuContent'
+import { ChunkLoader } from '../components/AsyncState'
+
+const DashboardContent = lazy(() => import('../combinedComponents/DashboardContent'))
+const MemberMenuContent = lazy(() => import('../combinedComponents/MemberMenuContent'))
+const PaymentsMenuContent = lazy(() => import('../combinedComponents/PaymentsMenuContent'))
+const ReportsMenuContent = lazy(() => import('../combinedComponents/ReportsMenuContent'))
+const SettingsMenuContent = lazy(() => import('../combinedComponents/SettingsMenuContent'))
+const NotificationMenuContent = lazy(() => import('../combinedComponents/NotificationMenuContent'))
+const AddMemberForm = lazy(() => import('../components/AddMemberForm'))
+const AddPaymentForm = lazy(() => import('../components/AddPaymentForm'))
+const LoginComp = lazy(() => import('../components/LoginComp'))
+const SignUp = lazy(() => import('../components/SignUp'))
+const MemberAccess = lazy(() => import('../combinedComponents/MemberAccess'))
+const LogoutBox = lazy(() => import('../components/LogoutBox'))
 
 
 function MainPage() {
@@ -28,14 +30,15 @@ function MainPage() {
     text-white
     '>
       <Routes>
-        <Route Component={SignUp} path='/signup'/>
-        <Route element={<MemberAccess/>} path='/memberaccess/:token'/>
-        <Route element={<LoginComp/>} exact path='/'/>
+        <Route element={<Suspense fallback={<ChunkLoader message="Loading sign up..." />}><SignUp/></Suspense>} path='/signup'/>
+        <Route element={<Suspense fallback={<ChunkLoader message="Loading member access..." />}><MemberAccess/></Suspense>} path='/memberaccess/:token'/>
+        <Route element={<Suspense fallback={<ChunkLoader message="Loading sign in..." />}><LoginComp/></Suspense>} exact path='/'/>
         <Route element={
           <ProtectedRoute>
             <>
             <SideBar/>
-            {
+            <Suspense fallback={<ChunkLoader message="Loading workspace..." />}>
+              {
               currentPageState==='Dashboard' ?
               <DashboardContent/>
               :
@@ -68,10 +71,11 @@ function MainPage() {
               :
               currentPageState==='logout' ?
               <>
-                <LogoutBox/>
+              <LogoutBox/>
               </>
               :''
-            }
+              }
+            </Suspense>
             </> 
           </ProtectedRoute>
         } path='/gymapp'/>

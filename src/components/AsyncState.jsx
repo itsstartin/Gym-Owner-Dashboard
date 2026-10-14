@@ -4,9 +4,17 @@ const stateClassName = 'flex min-h-40 flex-col items-center justify-center gap-3
 
 export function LoadingState({ message = 'Loading...' }) {
   return (
-    <div className={stateClassName} role="status">
+    <div className={stateClassName} role="status" aria-live="polite">
       <LoaderCircle className="animate-spin text-green-500" size={24} />
       <p className="text-sm text-gray-400">{message}</p>
+    </div>
+  )
+}
+
+export function ChunkLoader({ message = 'Loading page...' }) {
+  return (
+    <div className="flex min-h-screen w-full items-center justify-center p-6">
+      <LoadingState message={message} />
     </div>
   )
 }

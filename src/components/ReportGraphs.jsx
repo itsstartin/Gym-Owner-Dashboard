@@ -1,5 +1,7 @@
-import React, { useState } from 'react'
-import GraphCard from './GraphCard'
+import { lazy, Suspense, useState } from 'react'
+import { LoadingState } from './AsyncState'
+
+const GraphCard = lazy(() => import('./GraphCard'))
 
 function ReportGraphs({ graphData }) {
     const [graphState,setGraphState]=useState('Rev')
@@ -25,6 +27,7 @@ function ReportGraphs({ graphData }) {
                 :'w-full rounded-lg py-2 text-center text-sm font-medium text-gray-400 hover:bg-gray-800 hover:text-white'
             }>Attendance</button>
         </div>
+        <Suspense fallback={<LoadingState message="Loading chart..." />}>
         {graphState === 'Rev'?
             <div className='
             grid
@@ -43,6 +46,7 @@ function ReportGraphs({ graphData }) {
                 <GraphCard obj={graphData.hourly_attendance} Datasets/>
             </div>
         }
+        </Suspense>
     </div>
   )
 }

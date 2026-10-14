@@ -36,6 +36,7 @@ class MemberSerializer(serializers.ModelSerializer):
     membership_end_date=serializers.SerializerMethodField()
     overdue_days=serializers.SerializerMethodField()
     overdue_amount=serializers.SerializerMethodField()
+    has_attendance_today=serializers.SerializerMethodField()
     class Meta:
         model = Member
         fields = '__all__'
@@ -60,6 +61,9 @@ class MemberSerializer(serializers.ModelSerializer):
 
     def get_overdue_amount(self,obj):
         return self._payment_status(obj)["overdue_amount"]
+
+    def get_has_attendance_today(self, obj):
+        return bool(getattr(obj, "has_attendance_today", False))
 
 class RecentPaymentSerializer(serializers.ModelSerializer):
     member_name = serializers.CharField(source='member.name', read_only=True)

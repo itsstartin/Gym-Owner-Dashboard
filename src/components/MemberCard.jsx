@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import MemberTag from './MemberTag'
 import axios from '../axios';
 import { useSelector } from 'react-redux';
@@ -9,30 +9,25 @@ import MemberHistoryModal from './MemberHistoryModal';
 import { CalendarDays, Eye, Pencil, ReceiptIndianRupee, User} from 'lucide-react';
 
 function MemberCard(props) {
-    const [enabled, setEnabled] = useState(false);
+    const attendanceMarked = Boolean(props.member.has_attendance_today);
     const [viewProfile,setViewProfile] = useState()
     const [updateMember,setUpdateMember] = useState()
     const [historyType, setHistoryType] = useState()
     const markAttendanceState = useSelector((state)=>state.markAttendanceState.value)
-    useEffect(()=>{
-        axios.get(`members/getattendance/${props.member.id}`).then((res)=>{
-            res.data.length===0 ?
-            console.log(res.data) : 
-            setEnabled(true)
-        })
-    },[markAttendanceState, props.member.id]) 
     const markAttendance = () => {
         const today = new Date().toISOString();
         axios.post('members/markattendance',{
             member:props.member.id,
             date:today
+        }).then(()=>{
+            props.onAttendanceChanged(props.member.id, true)
+        }).catch((err)=>{
+            console.log(err)
         })
-        setEnabled(true)
     }
     const deleteAttendance = () => {
-        axios.delete(`members/deleteattendance/${props.member.id}`).then((res)=>{
-            console.log(res.data)
-            setEnabled(false)
+        axios.delete(`members/deleteattendance/${props.member.id}`).then(()=>{
+            props.onAttendanceChanged(props.member.id, false)
         }).catch((err)=>{
             console.log(err)
         })
@@ -78,8 +73,8 @@ function MemberCard(props) {
               </button>
               {markAttendanceState ?
               <Switch
-                checked={enabled}
-                onChange={enabled ? deleteAttendance : markAttendance}
+                checked={attendanceMarked}
+                onChange={attendanceMarked ? deleteAttendance : markAttendance}
                 />
               :
               ''

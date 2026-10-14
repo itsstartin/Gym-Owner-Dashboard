@@ -7,7 +7,7 @@ from rest_framework.decorators import api_view , permission_classes
 from rest_framework.response import Response
 from rest_framework import status
 from django.utils import timezone
-from django.db.models import Max
+from django.db.models import Exists, Max, OuterRef
 from members.services.calc_graph import calc_graph
 from members.services.percent_stat_diff import calc_percent_diff_data
 from members.services.member_access import send_mail_overdue_member, send_member_link
@@ -42,7 +42,16 @@ def get_members(request):
     members = (
         Member.objects.filter(user=request.user)
         .select_related("membership_plan")
-        .annotate(last_attendance_date=Max("attendance__date"))
+        .annotate(
+            last_attendance_date=Max("attendance__date"),
+            has_attendance_today=Exists(
+                Attendance.objects.filter(
+                    user=request.user,
+                    member_id=OuterRef("pk"),
+                    date__date=date.today(),
+                )
+            ),
+        )
     )
     serializer = MemberSerializer(members, many=True)
     return Response(serializer.data)

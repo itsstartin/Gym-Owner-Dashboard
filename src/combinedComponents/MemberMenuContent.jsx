@@ -22,6 +22,13 @@ function MemberMenuContent() {
       setMembers(response.data)
     })
   },[])
+  const updateMemberAttendance = useCallback((memberId, hasAttendanceToday)=>{
+    setMembers((currentMembers)=>currentMembers.map((member)=>
+      member.id === memberId
+        ? { ...member, has_attendance_today: hasAttendanceToday }
+        : member
+    ))
+  },[])
 
   useEffect(()=>{
     refreshMembers()
@@ -81,7 +88,12 @@ function MemberMenuContent() {
             {
             filteredMembers.length>0 ?
             filteredMembers.map((obj)=>{
-              return <MemberCard member={obj} key={obj.id} onMemberUpdated={refreshMembers}/>
+              return <MemberCard
+                member={obj}
+                key={obj.id}
+                onMemberUpdated={refreshMembers}
+                onAttendanceChanged={updateMemberAttendance}
+              />
             })
             :
             <div className='

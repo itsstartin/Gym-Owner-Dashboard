@@ -16,6 +16,7 @@ from members.views import (
     get_attendance,
     get_attendance_history,
     get_member,
+    get_members,
     get_payment_history,
     get_payments,
     mark_attendance,
@@ -195,6 +196,30 @@ class MemberStatusTests(TestCase):
         self.assertEqual(member.email, "expired-contact-new@example.com")
         self.assertEqual(member.phone_number, "+910000000000")
         self.assertEqual(member.membership_plan, self.plan)
+
+    def test_member_list_includes_todays_attendance_without_per_member_queries(self):
+        attended_member = self.create_member(
+            "Attended Today",
+            "+910000000006",
+            "attended-today@example.com",
+            membership_start_date=date.today(),
+        )
+        absent_member = self.create_member(
+            "Absent Today",
+            "+910000000007",
+            "absent-today@example.com",
+            membership_start_date=date.today(),
+        )
+        self.mark_attendance(attended_member, date.today())
+        request = self.factory.get("/members/get")
+        force_authenticate(request, user=self.user)
+
+        with self.assertNumQueries(1):
+            response = get_members(request)
+
+        members_by_id = {member["id"]: member for member in response.data}
+        self.assertTrue(members_by_id[attended_member.id]["has_attendance_today"])
+        self.assertFalse(members_by_id[absent_member.id]["has_attendance_today"])
 
     def test_member_serialization_uses_one_query_for_annotated_member_list(self):
         active_start_date = date.today() - timedelta(days=10)

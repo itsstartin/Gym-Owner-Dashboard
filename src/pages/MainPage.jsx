@@ -4,6 +4,7 @@ import SideBar from '../combinedComponents/SideBar'
 import { useSelector } from 'react-redux'
 import ProtectedRoute from '../features/ProtectedRoute'
 import { ChunkLoader } from '../components/AsyncState'
+import { useRoleAccess } from '../features/roleAccess'
 
 const DashboardContent = lazy(() => import('../combinedComponents/DashboardContent'))
 const MemberMenuContent = lazy(() => import('../combinedComponents/MemberMenuContent'))
@@ -21,6 +22,11 @@ const LogoutBox = lazy(() => import('../components/LogoutBox'))
 
 function MainPage() {
   const currentPageState = useSelector((state)=>state.currentPageState.value)
+  const { isLoading: isRoleLoading, dashboard, members, payments, reports, notifications, settings, manageMembers, managePayments } = useRoleAccess()
+  if (isRoleLoading) {
+    return <div className='flex min-h-screen w-full items-center justify-center bg-gray-950 text-gray-400'>Loading workspace...</div>
+  }
+
   return (
     <div className='
     flex
@@ -39,41 +45,41 @@ function MainPage() {
             <SideBar/>
             <Suspense fallback={<ChunkLoader message="Loading workspace..." />}>
               {
-              currentPageState==='Dashboard' ?
+              currentPageState==='Dashboard' && dashboard ?
               <DashboardContent/>
               :
-              currentPageState==='Members' ?
+              currentPageState==='Members' && members ?
               <MemberMenuContent/>
               :
-              currentPageState==='addMember' ?
+              currentPageState==='addMember' && manageMembers ?
               <> 
-                <DashboardContent/>
+                <MemberMenuContent/>
                 <AddMemberForm/>
               </>
               :
-              currentPageState==='Payments' ?
+              currentPageState==='Payments' && payments ?
               <PaymentsMenuContent/>
               :
-              currentPageState==='addPayment' ?
+              currentPageState==='addPayment' && managePayments ?
               <>
                 <PaymentsMenuContent/>
                 <AddPaymentForm/>
               </>
               :
-              currentPageState==='Reports' ?
+              currentPageState==='Reports' && reports ?
               <ReportsMenuContent/>
               :
-              currentPageState==='Notifications' ?
+              currentPageState==='Notifications' && notifications ?
               <NotificationMenuContent/>
               :
-              currentPageState==='Settings' ?
+              currentPageState==='Settings' && settings ?
               <SettingsMenuContent/>
               :
               currentPageState==='logout' ?
               <>
               <LogoutBox/>
               </>
-              :''
+              : members ? <MemberMenuContent/> : ''
               }
             </Suspense>
             </> 

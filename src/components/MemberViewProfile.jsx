@@ -1,8 +1,10 @@
 import React from 'react'
 import MemberTag from './MemberTag'
 import { User, X } from 'lucide-react'
+import { useRoleAccess } from '../features/roleAccess'
 
 function MemberViewProfile({viewProfile, setViewProfile}) {
+  const { viewPaymentDetails } = useRoleAccess()
   return (
     <div className='fixed
     z-40
@@ -70,7 +72,7 @@ function MemberViewProfile({viewProfile, setViewProfile}) {
             <p>{viewProfile.phone_number}</p>
             </div>
         </div>
-        <div className='
+        {viewPaymentDetails && <div className='
         flex
         items-center
         '>
@@ -82,7 +84,7 @@ function MemberViewProfile({viewProfile, setViewProfile}) {
             '>
             <p>{viewProfile.total_cash_paid}</p>
             </div>
-        </div>
+        </div>}
         <div className='
         flex
         items-center
@@ -114,7 +116,7 @@ function MemberViewProfile({viewProfile, setViewProfile}) {
         items-center
         '>
             {
-                viewProfile.status==='expired' &&
+                viewPaymentDetails && viewProfile.status==='expired' &&
 
                 <>
                      <p className='text-sm text-gray-400'>Overdue Amount</p>

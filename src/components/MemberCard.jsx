@@ -7,6 +7,7 @@ import MemberViewProfile from './MemberViewProfile';
 import UpdateMemberForm from './UpdateMemberForm';
 import MemberHistoryModal from './MemberHistoryModal';
 import { CalendarDays, Eye, Pencil, ReceiptIndianRupee, User} from 'lucide-react';
+import { useRoleAccess } from '../features/roleAccess';
 
 function MemberCard(props) {
     const attendanceMarked = Boolean(props.member.has_attendance_today);
@@ -20,6 +21,7 @@ function MemberCard(props) {
     const [updateMember,setUpdateMember] = useState()
     const [historyType, setHistoryType] = useState()
     const markAttendanceState = useSelector((state)=>state.markAttendanceState.value)
+    const { manageMembers, manageAttendance, viewPaymentDetails } = useRoleAccess()
     const markAttendance = () => {
         const today = new Date().toISOString();
         axios.post('members/markattendance',{
@@ -27,14 +29,12 @@ function MemberCard(props) {
             date:today
         }).then(()=>{
             props.onAttendanceChanged(props.member.id, true)
-        }).catch((err)=>{
-        })
+        }).catch(()=>undefined)
     }
     const deleteAttendance = () => {
         axios.delete(`members/deleteattendance/${props.member.id}`).then(()=>{
             props.onAttendanceChanged(props.member.id, false)
-        }).catch((err)=>{
-        })
+        }).catch(()=>undefined)
     }
   return (
     <>
@@ -72,10 +72,10 @@ function MemberCard(props) {
               <button type='button' aria-label='Attendance history' title='Attendance history' className='rounded-md p-1.5 text-gray-400 hover:bg-gray-800 hover:text-white' onClick={()=>setHistoryType('attendance')}>
                 <CalendarDays size={18}/>
               </button>
-              <button type='button' aria-label='Payment history' title='Payment history' className='rounded-md p-1.5 text-gray-400 hover:bg-gray-800 hover:text-white' onClick={()=>setHistoryType('payment')}>
+              {viewPaymentDetails && <button type='button' aria-label='Payment history' title='Payment history' className='rounded-md p-1.5 text-gray-400 hover:bg-gray-800 hover:text-white' onClick={()=>setHistoryType('payment')}>
                 <ReceiptIndianRupee size={18}/>
-              </button>
-              {markAttendanceState ?
+              </button>}
+              {manageAttendance && markAttendanceState ?
               <Switch
                 checked={attendanceMarked}
                 onChange={attendanceMarked ? deleteAttendance : markAttendance}
@@ -156,7 +156,7 @@ function MemberCard(props) {
                 <Eye size={18}/>
                 <h1>View</h1>
             </button>
-            <button
+            {manageMembers && <button
             type='button'
             className='
             flex
@@ -175,7 +175,7 @@ function MemberCard(props) {
             >
                 <Pencil size={18}/>
                 <h1>Update</h1>
-            </button>
+            </button>}
         </div>
     </div>
     {viewProfile ? 

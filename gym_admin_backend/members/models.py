@@ -11,6 +11,23 @@ phone_regex = RegexValidator(
 PAYMENT_TYPE_CHOICES=[('card','Card'),('cash','Cash'),('upi','UPI')]
 # MEMBER_STATUS_CHOICES=[('active','Active'),('due','Due'),('expired','Expired')]
 # Create your models here.
+class GymUserProfile(models.Model):
+    OWNER = 'owner'
+    TRAINER = 'trainer'
+    FRONT_DESK = 'front_desk'
+    ROLE_CHOICES = [
+        (OWNER, 'Owner'),
+        (TRAINER, 'Trainer'),
+        (FRONT_DESK, 'Front Desk'),
+    ]
+
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='gym_profile')
+    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default=OWNER)
+
+    def __str__(self):
+        return f'{self.user.username} ({self.get_role_display()})'
+
+
 class Member(models.Model):
     user = models.ForeignKey(User,on_delete=models.CASCADE)
     name = models.CharField(max_length=50)

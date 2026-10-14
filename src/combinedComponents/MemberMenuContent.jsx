@@ -7,7 +7,9 @@ import { Check, Plus } from 'lucide-react'
 import IconDescBtn from '../components/IconDescBtn'
 import { useDispatch, useSelector } from 'react-redux'
 import { markAttendanceOff, markAttendanceOn } from '../features/markAttendanceSlice'
+import { addMemberOn } from '../features/currentPageSlice'
 import { EmptyState, ErrorState, LoadingState } from '../components/AsyncState'
+import { useRoleAccess } from '../features/roleAccess'
 
 const defaultFilters = {
   search: '',
@@ -24,6 +26,7 @@ function MemberMenuContent() {
   const markAttendanceState = useSelector((state)=>state.markAttendanceState.value)
   const memberFilters = useSelector((state)=>state.currentPageState.memberFilters)
   const dispatch = useDispatch()
+  const { manageAttendance, manageMembers } = useRoleAccess()
   const [members, setMembers]=useState([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
@@ -72,7 +75,7 @@ function MemberMenuContent() {
   return (
     <div className='
     flex
-    flex-col 
+    flex-col
     w-full
     min-h-screen
     max-h-fit
@@ -93,12 +96,13 @@ function MemberMenuContent() {
               justify-end
               items-center
               '>
-                  <IconDescBtn icon={markAttendanceState ? Check : Plus} label={markAttendanceState ? 'Done' : 'Mark Attendance'} 
+                  {manageMembers && <IconDescBtn icon={Plus} label='Add Member' onClick={()=>dispatch(addMemberOn())}/>}
+                  {manageAttendance && <IconDescBtn icon={markAttendanceState ? Check : Plus} label={markAttendanceState ? 'Done' : 'Mark Attendance'}
                   onClick={()=>{
                     markAttendanceState ?
                     dispatch(markAttendanceOff()) :
                     dispatch(markAttendanceOn())
-                  }} /> 
+                  }} />}
               </div>
           </div>
         <MemberSearchBar filterValue={filterValue} setFilterValue={setFilterValue}/>

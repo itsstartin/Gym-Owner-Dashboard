@@ -1,6 +1,7 @@
 import { Dumbbell } from "lucide-react";
 import React, { useState } from "react";
 import axios from '../axios_simple'
+import authenticatedAxios from '../axios'
 import {useNavigate} from 'react-router-dom'
 import {ClipLoader} from 'react-spinners'
 
@@ -24,8 +25,11 @@ const LoginComp = () => {
     setIsLoading(true)
     // call your signup API here
     try{
-      await axios.post('login/',form).then((res)=>{
+      await axios.post('login/',form).then(async (res)=>{
         localStorage.setItem("token",res.data.access)
+        const user = await authenticatedAxios.get('members/user')
+        localStorage.setItem('gymRole', user.data.role)
+        window.dispatchEvent(new Event('gym-role-changed'))
         setForm({
           username: "",
           password: "",

@@ -4,7 +4,7 @@ from rest_framework import serializers
 
 from members.services.payment_calc import get_member_payment_status
 from members.services.member_health import get_member_health
-from . models import Attendance, Member, Notification, RecentPayment, MembershipPlan
+from . models import Attendance, GymUserProfile, Member, Notification, RecentPayment, MembershipPlan
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -17,7 +17,9 @@ class UserSerializer(serializers.ModelSerializer):
         validate_password(value)
         return value
     def create(self,validated_data):
-        return User.objects.create_user(**validated_data)
+        user = User.objects.create_user(**validated_data)
+        GymUserProfile.objects.get_or_create(user=user)
+        return user
 
 class MembershipPlanSerializer(serializers.ModelSerializer):
     class Meta:

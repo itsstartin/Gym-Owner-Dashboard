@@ -31,7 +31,7 @@ function AddPaymentForm() {
             })
             alert("Payment Added Successfully")
         }
-        catch (error) {
+        catch {
             alert("Error saving data")
         }
     }

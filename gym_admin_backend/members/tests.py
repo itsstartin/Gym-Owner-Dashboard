@@ -6,8 +6,9 @@ from datetime import date, datetime, time, timedelta
 from rest_framework import status
 from rest_framework.test import APIRequestFactory, force_authenticate
 
-from members.models import Attendance, Member, MembershipPlan, RecentPayment
+from members.models import Attendance, GymUserProfile, Member, MembershipPlan, RecentPayment
 from members.serializer import MemberSerializer
+from members.permissions import get_user_role
 from members.services.payment_calc import calc_data, calc_member_overdue, calc_overdue_amount
 from members.services.member_health import get_member_health
 from members.services.calc_graph import calc_graph
@@ -15,11 +16,17 @@ from members.views import (
     create_payment,
     delete_attendance,
     get_attendance,
+    current_user,
     get_attendance_history,
     get_member,
     get_members,
     get_payment_history,
     get_payments,
+    get_plans,
+    get_graph,
+    get_calc,
+    get_percent_stat_diff,
+    update_user_email,
     mark_attendance,
     notify_overdue_member,
     send_attendance_mail_member,
@@ -541,3 +548,134 @@ class MemberOwnershipTests(TestCase):
 
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
         thread.assert_not_called()
+
+class RolePermissionTests(TestCase):
+    def setUp(self):
+        self.owner = User.objects.create_user(username="role-owner", password="pass")
+        self.trainer = User.objects.create_user(username="role-trainer", password="pass")
+        self.front_desk = User.objects.create_user(username="role-front-desk", password="pass")
+        self.trainer.gym_profile.role = GymUserProfile.TRAINER
+        self.trainer.gym_profile.save(update_fields=["role"])
+        self.front_desk.gym_profile.role = GymUserProfile.FRONT_DESK
+        self.front_desk.gym_profile.save(update_fields=["role"])
+        self.plan = MembershipPlan.objects.create(name="Role Plan", plan_price=300)
+        self.member = Member.objects.create(
+            user=self.owner,
+            name="Role Member",
+            phone_number="+910000009999",
+            email="role-member@example.com",
+            membership_plan=self.plan,
+            membership_start_date=date.today(),
+        )
+        self.factory = APIRequestFactory()
+        self.trainer_member = Member.objects.create(
+            user=self.trainer,
+            name="Trainer Member",
+            phone_number="+910000009998",
+            email="trainer-member@example.com",
+            membership_plan=self.plan,
+            membership_start_date=date.today(),
+        )
+        self.front_desk_member = Member.objects.create(
+            user=self.front_desk,
+            name="Front Desk Member",
+            phone_number="+910000009997",
+            email="front-desk-member@example.com",
+            membership_plan=self.plan,
+            membership_start_date=date.today(),
+        )
+
+    def request_for(self, user, method, path, data=None):
+        request = getattr(self.factory, method)(path, data or {}, format="json")
+        force_authenticate(request, user=user)
+        return request
+
+    def test_new_users_receive_owner_profile_by_default(self):
+        self.assertEqual(self.owner.gym_profile.role, GymUserProfile.OWNER)
+
+    def test_user_without_profile_falls_back_to_owner_for_existing_accounts(self):
+        GymUserProfile.objects.filter(user=self.owner).delete()
+        self.owner._state.fields_cache.pop("gym_profile", None)
+
+        response = get_members(self.request_for(self.owner, "get", "/members/get"))
+
+        self.assertEqual(get_user_role(self.owner), GymUserProfile.OWNER)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_trainer_can_view_members_and_attendance_only(self):
+        member_response = get_members(self.request_for(self.trainer, "get", "/members/get"))
+        attendance_response = get_attendance_history(
+            self.request_for(self.trainer, "get", f"/members/getattendancehistory/{self.trainer_member.id}"),
+            self.trainer_member.id,
+        )
+        payment_response = get_payments(self.request_for(self.trainer, "get", "/members/getpayments"))
+        plan_response = get_plans(self.request_for(self.trainer, "get", "/members/getplans"))
+        create_response = create_payment(
+            self.request_for(
+                self.trainer,
+                "post",
+                "/members/pay",
+                {"member": self.trainer_member.id, "amount": 100, "payment_type": "cash"},
+            )
+        )
+        attendance_write_response = mark_attendance(
+            self.request_for(
+                self.trainer,
+                "post",
+                "/members/markattendance",
+                {"member": self.trainer_member.id, "date": timezone.now().isoformat()},
+            )
+        )
+
+        self.assertEqual(member_response.status_code, status.HTTP_200_OK)
+        self.assertEqual(attendance_response.status_code, status.HTTP_200_OK)
+        self.assertEqual(payment_response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(plan_response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(create_response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(attendance_write_response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_front_desk_can_manage_members_payments_and_attendance_but_not_owner_areas(self):
+        member_response = update_member(
+            self.request_for(
+                self.front_desk,
+                "patch",
+                f"/members/update/{self.front_desk_member.id}",
+                {"phone_number": "+910000008888"},
+            ),
+            self.front_desk_member.id,
+        )
+        payment_response = create_payment(
+            self.request_for(
+                self.front_desk,
+                "post",
+                "/members/pay",
+                {"member": self.front_desk_member.id, "amount": 100, "payment_type": "cash"},
+            )
+        )
+        attendance_response = mark_attendance(
+            self.request_for(
+                self.front_desk,
+                "post",
+                "/members/markattendance",
+                {"member": self.front_desk_member.id, "date": timezone.now().isoformat()},
+            )
+        )
+        graph_response = get_graph(self.request_for(self.front_desk, "get", "/members/getgraph"))
+        email_response = update_user_email(
+            self.request_for(self.front_desk, "post", "/members/update-user-email", {"email": "desk@example.com"})
+        )
+
+        self.assertEqual(member_response.status_code, status.HTTP_202_ACCEPTED)
+        self.assertEqual(payment_response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(attendance_response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(graph_response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(email_response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_owner_can_access_owner_only_areas(self):
+        graph_response = get_graph(self.request_for(self.owner, "get", "/members/getgraph"))
+        calculation_response = get_calc(self.request_for(self.owner, "get", "/members/getcalc"))
+        user_response = current_user(self.request_for(self.owner, "get", "/members/user"))
+
+        self.assertEqual(graph_response.status_code, status.HTTP_200_OK)
+        self.assertEqual(calculation_response.status_code, status.HTTP_200_OK)
+        self.assertEqual(user_response.data["role"], GymUserProfile.OWNER)

@@ -20,8 +20,7 @@ function SettingsMemberSection() {
         e.preventDefault()
         setIsLoading(true)
         try{
-            await axios.post('members/attendance-mail',selectedMember).then((res)=>{
-            })
+            await axios.post('members/attendance-mail', selectedMember)
         }
         finally{
             setIsLoading(false)

@@ -9,7 +9,8 @@ function NotificationCard(props) {
             await axios.post(`members/readnotification/${id}`)
             markRead(true)
         }
-        catch(err){
+        catch {
+            return undefined
         }
     }
   return (

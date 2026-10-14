@@ -8,6 +8,7 @@ function LogoutBox() {
   const dispatch = useDispatch()
   const handleLogout = () => {
     localStorage.removeItem('token')
+    localStorage.removeItem('gymRole')
     navigate('/')
   }
   return (

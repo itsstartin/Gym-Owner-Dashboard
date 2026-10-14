@@ -12,6 +12,7 @@ from members.services.calc_graph import calc_graph
 from members.services.percent_stat_diff import calc_percent_diff_data
 from members.services.member_access import send_mail_overdue_member, send_member_link
 from members.services.notification_service import check_expired_members, check_inactive_members
+from members.permissions import MemberViewer, OwnerOnly, OwnerOrFrontDesk, get_user_role
 from members.services.payment_calc import calc_data, calc_member_overdue, calc_member_period_payment_total, calc_member_plan_transfer_amount, get_member_payment_status
 from . models import Attendance, Member , MembershipPlan, Notification, RecentPayment
 from . serializer import AttendanceSerializer, NotificationSerializer, UserSerializer ,MemberSerializer, RecentPaymentSerializer , MembershipPlanSerializer
@@ -27,17 +28,18 @@ def register(request):
     return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, MemberViewer])
 def current_user(request):
     user = request.user
     data = {
         "username":user.username,
         "email":user.email
+        ,"role": get_user_role(user)
     }
     return Response(data)
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, MemberViewer])
 def get_members(request):
     members = (
         Member.objects.filter(user=request.user)
@@ -57,7 +59,7 @@ def get_members(request):
     return Response(serializer.data)
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, MemberViewer])
 def get_member(request , id):
     member = get_object_or_404(
         Member.objects.select_related("membership_plan").annotate(
@@ -70,13 +72,14 @@ def get_member(request , id):
     return Response(serializer.data)
 
 @api_view(['GET'])
+@permission_classes([IsAuthenticated, OwnerOrFrontDesk])
 def get_plans(request):
     plans = MembershipPlan.objects.all()
     serializer = MembershipPlanSerializer(plans, many=True)
     return Response(serializer.data)
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, OwnerOrFrontDesk])
 def get_payments(request):
     payments = (
         RecentPayment.objects.filter(user=request.user)
@@ -87,7 +90,7 @@ def get_payments(request):
     return Response(serializer.data)
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, OwnerOrFrontDesk])
 def get_overdue_members(request):
     members = (
         Member.objects.filter(user=request.user)
@@ -110,20 +113,20 @@ def get_overdue_members(request):
     return Response(overdue_list)
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, OwnerOrFrontDesk])
 def get_calc(request):
     data = calc_data(request.user)
     return Response(data)
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, OwnerOnly])
 def get_graph(request):
     data = calc_graph(request.user)
     return Response(data)
 
 
 @api_view(['PATCH'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, OwnerOrFrontDesk])
 def update_member(request,id):
     member = get_object_or_404(Member, id=id, user=request.user)
     serializer = MemberSerializer(member, data =request.data ,partial=True)
@@ -151,7 +154,7 @@ def update_member(request,id):
 
 
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, OwnerOrFrontDesk])
 def create_member(request):
     serializer = MemberSerializer(data=request.data)
     if serializer.is_valid():
@@ -160,7 +163,7 @@ def create_member(request):
     return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, OwnerOrFrontDesk])
 def create_payment(request):
     serializer = RecentPaymentSerializer(data=request.data)
     if serializer.is_valid():
@@ -184,7 +187,7 @@ def create_payment(request):
     return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, OwnerOrFrontDesk])
 def mark_attendance(request):
     serializer = AttendanceSerializer(data=request.data)
     if serializer.is_valid():
@@ -200,7 +203,7 @@ def mark_attendance(request):
     return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['DELETE'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, OwnerOrFrontDesk])
 def delete_attendance(request,id):
     get_object_or_404(Member, id=id, user=request.user)
     attendance = Attendance.objects.filter(
@@ -212,7 +215,7 @@ def delete_attendance(request,id):
     return Response(status=status.HTTP_204_NO_CONTENT)
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, MemberViewer])
 def get_attendance(request,id):
     get_object_or_404(Member, id=id, user=request.user)
     attendance = Attendance.objects.filter(
@@ -224,7 +227,7 @@ def get_attendance(request,id):
     return Response(serializer.data)
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, MemberViewer])
 def get_attendance_history(request, id):
     get_object_or_404(Member, id=id, user=request.user)
     attendance = Attendance.objects.filter(
@@ -235,7 +238,7 @@ def get_attendance_history(request, id):
     return Response(serializer.data)
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, OwnerOrFrontDesk])
 def get_payment_history(request, id):
     get_object_or_404(Member, id=id, user=request.user)
     payments = RecentPayment.objects.filter(
@@ -284,7 +287,7 @@ def member_access_mark_attendance(request,token):
     return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, OwnerOrFrontDesk])
 def notify_overdue_member(request):
     data=request.data
     get_object_or_404(Member, id=data["id"], user=request.user)
@@ -296,7 +299,7 @@ def notify_overdue_member(request):
     return Response({"msg":"Notified the Overdue Member"},status=status.HTTP_200_OK)
 
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, OwnerOrFrontDesk])
 def send_attendance_mail_member(request):
     data=request.data
     if data["member_id"]=='all':
@@ -309,7 +312,7 @@ def send_attendance_mail_member(request):
     return Response({"msg":f"Attendance Link Successfully Sented for {member.name}"},status=status.HTTP_200_OK)
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, OwnerOnly])
 def add_notification(request):
     members = list(
         Member.objects.filter(user=request.user)
@@ -321,14 +324,14 @@ def add_notification(request):
     return Response({"msg":"notification processed"})
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, OwnerOnly])
 def get_notifications(request):
     notifications = Notification.objects.filter(user=request.user).order_by('-created_at')
     serializer=NotificationSerializer(notifications,many=True)
     return Response(serializer.data,status=status.HTTP_200_OK)
 
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, OwnerOnly])
 def mark_notification_read(request,pk):
     try:
         notification = Notification.objects.get(user=request.user,id=pk)
@@ -339,7 +342,7 @@ def mark_notification_read(request,pk):
         return Response({"error":"Notificatin not found"},status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, OwnerOnly])
 def update_user_email(request):
     new_email = request.data.get("email")
     if not new_email:
@@ -360,7 +363,7 @@ def update_user_email(request):
     })
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, OwnerOrFrontDesk])
 def get_percent_stat_diff(request):
     data = calc_percent_diff_data(request.user)
     return Response(data,status=status.HTTP_200_OK)

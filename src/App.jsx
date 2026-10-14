@@ -1,6 +1,7 @@
 import './App.css'
 import MainPage from './pages/MainPage'
 import {BrowserRouter as Router} from 'react-router'
+import { RoleProvider } from './features/roleAccess'
 
 function App() {
 
@@ -15,7 +16,9 @@ function App() {
     //   <StatsCard/>
     // </div>
     <Router>
-      <MainPage/>
+      <RoleProvider>
+        <MainPage/>
+      </RoleProvider>
     </Router>
   )
 }

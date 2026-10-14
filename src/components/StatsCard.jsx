@@ -2,23 +2,30 @@ import React from 'react'
 
 function StatsCard(props) {
   const Icon = props.icon
+  const Card = props.onClick ? 'button' : 'div'
+  const cardClassName = [
+    'flex',
+    'flex-col',
+    'rounded-xl',
+    'gap-7',
+    'bg-gray-900/80',
+    'text-white',
+    'p-5',
+    'border',
+    'border-gray-800',
+    'shadow-sm',
+    'shadow-black/20',
+    'transition-colors',
+    'hover:border-green-900',
+    'text-left',
+    props.onClick && 'cursor-pointer focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 focus:ring-offset-gray-950',
+  ].filter(Boolean).join(' ')
   return (
-    <div
-    className='
-    flex
-    flex-col
-    rounded-xl
-    gap-7
-    bg-gray-900/80
-    text-white
-    p-5
-    border
-    border-gray-800
-    shadow-sm
-    shadow-black/20
-    transition-colors
-    hover:border-green-900
-    '>
+    <Card
+    type={props.onClick ? 'button' : undefined}
+    onClick={props.onClick}
+    aria-label={props.ariaLabel}
+    className={cardClassName}>
         {!Icon ?
         <>
         <div
@@ -79,7 +86,7 @@ function StatsCard(props) {
             </div>
         </div>
         </>}
-    </div>
+    </Card>
   )
 }
 

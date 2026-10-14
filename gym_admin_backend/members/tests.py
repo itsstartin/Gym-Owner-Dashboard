@@ -379,6 +379,54 @@ class MemberStatusTests(TestCase):
         self.assertEqual(data["payment_count"], 1)
         self.assertEqual(data["today_att_count"], 1)
 
+    def test_dashboard_retention_summary_reuses_member_health_with_fixed_queries(self):
+        healthy_member = self.create_member(
+            "Healthy Dashboard Member",
+            "+910000000020",
+            "healthy-dashboard@example.com",
+            total_cash_paid=600,
+            membership_start_date=date.today() - timedelta(days=10),
+        )
+        due_member = self.create_member(
+            "Due Dashboard Member",
+            "+910000000021",
+            "due-dashboard@example.com",
+            membership_start_date=date.today() - timedelta(days=28),
+        )
+        self.create_member(
+            "Inactive Dashboard Member",
+            "+910000000022",
+            "inactive-dashboard@example.com",
+        )
+        self.create_member(
+            "Expiring Dashboard Member",
+            "+910000000023",
+            "expiring-dashboard@example.com",
+            membership_start_date=date.today() - timedelta(days=24),
+        )
+        self.mark_attendance(healthy_member, date.today())
+        self.mark_attendance(due_member, date.today())
+
+        with self.assertNumQueries(3):
+            data = calc_data(self.user)
+
+        retention = data["retention"]
+        self.assertEqual(retention["at_risk_count"], 2)
+        self.assertEqual(retention["inactive_count"], 1)
+        self.assertEqual(retention["expiring_soon_count"], 2)
+        self.assertEqual(
+            {action["id"]: action["count"] for action in retention["suggested_actions"]},
+            {"at_risk": 2, "inactive": 1, "expiring_soon": 2},
+        )
+        self.assertEqual(
+            {action["id"]: action["filter"] for action in retention["suggested_actions"]},
+            {
+                "at_risk": {"health": "at_risk"},
+                "inactive": {"status": "inactive"},
+                "expiring_soon": {"expiry": "expiring_soon"},
+            },
+        )
+
 class MemberOwnershipTests(TestCase):
     def setUp(self):
         self.owner = User.objects.create_user(username="owner", password="pass")

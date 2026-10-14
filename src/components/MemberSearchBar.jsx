@@ -64,6 +64,10 @@ function MemberSearchBar({filterValue, setFilterValue}) {
                 <option value=''>All Health</option>
                 <option value='at_risk'>At-risk members</option>
         </select>
+        <select value={filterValue.expiry} name='expiry' className='w-full rounded-lg border border-gray-700 bg-gray-950 px-3 py-2 text-sm outline-none focus:border-green-700 sm:w-auto' onChange={handleChange}>
+                <option value=''>All Memberships</option>
+                <option value='expiring_soon'>Expiring in 7 days</option>
+        </select>
     </div>
   )
 }

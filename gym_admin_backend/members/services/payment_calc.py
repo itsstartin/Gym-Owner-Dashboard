@@ -81,7 +81,7 @@ def calc_data(user):
         .select_related("membership_plan")
         .annotate(last_attendance_date=Max("attendance__date"))
     )
-    overdue_amount, advance_amount = _calc_member_balance_totals(members, today)
+    overdue_amount, advance_amount, retention = _calc_member_dashboard_summaries(members, today)
 
     return {
         "payment_count": payment_totals["payment_count"],
@@ -92,6 +92,7 @@ def calc_data(user):
         "month_att_avg": f"{attendance_totals['month_count'] / today.day:.2f}",
         "members_count": len(members),
         "today_att_count": attendance_totals["today_count"],
+        "retention": retention,
     }
 
 
@@ -105,14 +106,28 @@ def _next_month_start(month_start):
     return date(month_start.year, month_start.month + 1, 1)
 
 
-def _calc_member_balance_totals(members, today):
+def _calc_member_dashboard_summaries(members, today):
+    # Imported here to avoid a circular import: Member Health uses payment status.
+    from members.services.member_health import get_member_health
+
     total_due_amount = 0.0
     total_advance_amount = 0.0
+    at_risk_count = 0
+    inactive_count = 0
+    expiring_soon_count = 0
 
     for member in members:
         status_data = get_member_payment_status(member, today=today)
         if status_data["status"] == "expired":
             total_due_amount += float(status_data["overdue_amount"])
+
+        health = get_member_health(member, payment_status=status_data, today=today)
+        if health["is_at_risk"]:
+            at_risk_count += 1
+        if status_data["status"] == "inactive":
+            inactive_count += 1
+        if 0 <= health["days_remaining"] <= 7:
+            expiring_soon_count += 1
 
         current_validity = int((member.total_cash_paid / member.membership_plan.plan_price) * 30)
         expected_validity = (today - member.membership_start_date).days
@@ -121,7 +136,36 @@ def _calc_member_balance_totals(members, today):
                 (current_validity - expected_validity) / 30
             ) * member.membership_plan.plan_price
 
-    return f"{total_due_amount:.2f}", f"{total_advance_amount:.2f}"
+    retention = {
+        "at_risk_count": at_risk_count,
+        "inactive_count": inactive_count,
+        "expiring_soon_count": expiring_soon_count,
+        "suggested_actions": [
+            {
+                "id": "at_risk",
+                "title": "Review at-risk members",
+                "description": "Prioritize a check-in or payment follow-up.",
+                "count": at_risk_count,
+                "filter": {"health": "at_risk"},
+            },
+            {
+                "id": "inactive",
+                "title": "Reconnect inactive members",
+                "description": "Invite members who have stopped attending back.",
+                "count": inactive_count,
+                "filter": {"status": "inactive"},
+            },
+            {
+                "id": "expiring_soon",
+                "title": "Reach out before expiry",
+                "description": "Help members renew within the next seven days.",
+                "count": expiring_soon_count,
+                "filter": {"expiry": "expiring_soon"},
+            },
+        ],
+    }
+
+    return f"{total_due_amount:.2f}", f"{total_advance_amount:.2f}", retention
 
 def calc_total_revenue(user):
     payments = RecentPayment.objects.filter(user=user)

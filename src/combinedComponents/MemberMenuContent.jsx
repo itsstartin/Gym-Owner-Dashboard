@@ -9,14 +9,20 @@ import { useDispatch, useSelector } from 'react-redux'
 import { markAttendanceOff, markAttendanceOn } from '../features/markAttendanceSlice'
 import { EmptyState, ErrorState, LoadingState } from '../components/AsyncState'
 
+const defaultFilters = {
+  search: '',
+  status: '',
+  type: '',
+  health: '',
+  expiry: '',
+}
+
 function MemberMenuContent() {
   const [filterValue, setFilterValue] = useState({
-    search: '',
-    status: '',
-    type: '',
-    health: '',
+    ...defaultFilters,
   })
   const markAttendanceState = useSelector((state)=>state.markAttendanceState.value)
+  const memberFilters = useSelector((state)=>state.currentPageState.memberFilters)
   const dispatch = useDispatch()
   const [members, setMembers]=useState([])
   const [isLoading, setIsLoading] = useState(true)
@@ -50,8 +56,12 @@ function MemberMenuContent() {
     }
   },[dispatch, refreshMembers])
 
+  useEffect(()=>{
+    setFilterValue({ ...defaultFilters, ...memberFilters })
+  },[memberFilters])
+
   const filteredMembers = members.filter((obj)=>{
-    return obj.name.toLowerCase().includes(filterValue.search.toLowerCase()) && (filterValue.status==='' || obj.status===filterValue.status) && (filterValue.type==='' || obj.membership_plan.name===filterValue.type) && (filterValue.health === '' || obj.health?.is_at_risk)
+    return obj.name.toLowerCase().includes(filterValue.search.toLowerCase()) && (filterValue.status==='' || obj.status===filterValue.status) && (filterValue.type==='' || obj.membership_plan.name===filterValue.type) && (filterValue.health === '' || obj.health?.is_at_risk) && (filterValue.expiry === '' || (obj.health?.days_remaining >= 0 && obj.health?.days_remaining <= 7))
   })
 
   const emptyTitle = members.length === 0 ? 'No members yet' : 'No matching members'

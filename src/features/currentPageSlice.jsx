@@ -1,10 +1,11 @@
 import { createSlice } from "@reduxjs/toolkit";
 const currentPageSlice = createSlice({
     name:'currentPageState',
-    initialState:{value:'Dashboard'},
+    initialState:{value:'Dashboard', memberFilters:{}},
     reducers:{
         dashboardOn:(state)=>{state.value='Dashboard'},
-        membersOn:(state)=>{state.value='Members'},
+        membersOn:(state)=>{state.value='Members'; state.memberFilters={}},
+        membersWithFilters:(state, action)=>{state.value='Members'; state.memberFilters=action.payload},
         paymentsOn:(state)=>{state.value='Payments'},
         reportsOn:(state)=>{state.value='Reports'}, 
         addMemberOn:(state)=>{state.value='addMember'},
@@ -14,5 +15,5 @@ const currentPageSlice = createSlice({
         logoutOn:(state)=>{state.value='logout'},
     }
 })
-export const {dashboardOn,membersOn,paymentsOn,reportsOn, addMemberOn, addPaymentOn,notificationsOn,settingsOn, logoutOn} = currentPageSlice.actions;
+export const {dashboardOn,membersOn,membersWithFilters,paymentsOn,reportsOn, addMemberOn, addPaymentOn,notificationsOn,settingsOn, logoutOn} = currentPageSlice.actions;
 export default currentPageSlice.reducer;

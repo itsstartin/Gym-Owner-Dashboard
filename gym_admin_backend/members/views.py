@@ -48,11 +48,14 @@ def get_members(request):
     return Response(serializer.data)
 
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def get_member(request , id):
-    member = (
-        Member.objects.select_related("membership_plan")
-        .annotate(last_attendance_date=Max("attendance__date"))
-        .get(id=id)
+    member = get_object_or_404(
+        Member.objects.select_related("membership_plan").annotate(
+            last_attendance_date=Max("attendance__date")
+        ),
+        id=id,
+        user=request.user,
     )
     serializer = MemberSerializer(member)
     return Response(serializer.data)
@@ -64,6 +67,7 @@ def get_plans(request):
     return Response(serializer.data)
 
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def get_payments(request):
     payments = (
         RecentPayment.objects.filter(user=request.user)
@@ -151,9 +155,13 @@ def create_member(request):
 def create_payment(request):
     serializer = RecentPaymentSerializer(data=request.data)
     if serializer.is_valid():
-        member = serializer.validated_data['member']
+        member = get_object_or_404(
+            Member,
+            id=serializer.validated_data['member'].id,
+            user=request.user,
+        )
         member_status = get_member_payment_status(member)["status"]
-        payment = serializer.save(user=request.user)
+        payment = serializer.save(user=request.user, member=member)
 
         update_fields = ["total_cash_paid"]
         if member_status == "inactive":
@@ -171,16 +179,21 @@ def create_payment(request):
 def mark_attendance(request):
     serializer = AttendanceSerializer(data=request.data)
     if serializer.is_valid():
-        member = serializer.validated_data['member']
+        member = get_object_or_404(
+            Member,
+            id=serializer.validated_data['member'].id,
+            user=request.user,
+        )
         if Attendance.objects.filter(user=request.user,member=member,date__date=date.today()).exists():
             return Response({"msg":"Attendance already marked"},status=status.HTTP_400_BAD_REQUEST)
-        serializer.save(user=request.user)
+        serializer.save(user=request.user, member=member)
         return Response(serializer.data,status=status.HTTP_201_CREATED)
     return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated])
 def delete_attendance(request,id):
+    get_object_or_404(Member, id=id, user=request.user)
     attendance = Attendance.objects.filter(
         user=request.user,
         member=id,
@@ -192,6 +205,7 @@ def delete_attendance(request,id):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_attendance(request,id):
+    get_object_or_404(Member, id=id, user=request.user)
     attendance = Attendance.objects.filter(
         user=request.user,
         member=id,
@@ -264,6 +278,7 @@ def member_access_mark_attendance(request,token):
 @permission_classes([IsAuthenticated])
 def notify_overdue_member(request):
     data=request.data
+    get_object_or_404(Member, id=data["id"], user=request.user)
     thread = threading.Thread(
         target = send_mail_overdue_member,
         args=(data,)
@@ -280,7 +295,7 @@ def send_attendance_mail_member(request):
         for member in members:
             send_member_link(member)
         return Response({"msg":"Attendance Link Successfully Sented for All Members"},status=status.HTTP_200_OK)
-    member=Member.objects.get(id=data["member_id"])
+    member=get_object_or_404(Member, id=data["member_id"], user=request.user)
     send_member_link(member)
     return Response({"msg":f"Attendance Link Successfully Sented for {member.name}"},status=status.HTTP_200_OK)
 

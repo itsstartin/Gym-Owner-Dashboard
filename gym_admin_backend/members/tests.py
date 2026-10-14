@@ -10,7 +10,20 @@ from members.models import Attendance, Member, MembershipPlan, RecentPayment
 from members.serializer import MemberSerializer
 from members.services.payment_calc import calc_data, calc_member_overdue, calc_overdue_amount
 from members.services.calc_graph import calc_graph
-from members.views import create_payment, get_payments, update_member
+from members.views import (
+    create_payment,
+    delete_attendance,
+    get_attendance,
+    get_attendance_history,
+    get_member,
+    get_payment_history,
+    get_payments,
+    mark_attendance,
+    notify_overdue_member,
+    send_attendance_mail_member,
+    update_member,
+)
+from unittest.mock import patch
 
 
 class MemberStatusTests(TestCase):
@@ -274,3 +287,118 @@ class MemberStatusTests(TestCase):
         self.assertEqual(data["members_count"], 1)
         self.assertEqual(data["payment_count"], 1)
         self.assertEqual(data["today_att_count"], 1)
+
+class MemberOwnershipTests(TestCase):
+    def setUp(self):
+        self.owner = User.objects.create_user(username="owner", password="pass")
+        self.other_user = User.objects.create_user(username="other", password="pass")
+        self.plan = MembershipPlan.objects.create(name="Ownership Plan", plan_price=300)
+        self.other_member = Member.objects.create(
+            user=self.other_user,
+            name="Other Member",
+            phone_number="+919876543210",
+            email="other-member@example.com",
+            membership_plan=self.plan,
+            membership_start_date=date.today(),
+        )
+        self.factory = APIRequestFactory()
+
+    def request_for_owner(self, method, path, data=None):
+        request = getattr(self.factory, method)(path, data or {}, format="json")
+        force_authenticate(request, user=self.owner)
+        return request
+
+    def test_member_detail_denies_another_users_member(self):
+        response = get_member(
+            self.request_for_owner("get", f"/members/get/{self.other_member.id}"),
+            self.other_member.id,
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_payment_creation_denies_another_users_member(self):
+        response = create_payment(
+            self.request_for_owner(
+                "post",
+                "/members/pay",
+                {"member": self.other_member.id, "amount": 100, "payment_type": "cash"},
+            )
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertFalse(RecentPayment.objects.filter(member=self.other_member).exists())
+
+    def test_attendance_endpoints_deny_another_users_member(self):
+        Attendance.objects.create(user=self.other_user, member=self.other_member)
+
+        create_response = mark_attendance(
+            self.request_for_owner(
+                "post",
+                "/members/markattendance",
+                {"member": self.other_member.id, "date": timezone.now().isoformat()},
+            )
+        )
+        get_response = get_attendance(
+            self.request_for_owner("get", f"/members/getattendance/{self.other_member.id}"),
+            self.other_member.id,
+        )
+        history_response = get_attendance_history(
+            self.request_for_owner("get", f"/members/getattendancehistory/{self.other_member.id}"),
+            self.other_member.id,
+        )
+        delete_response = delete_attendance(
+            self.request_for_owner("delete", f"/members/deleteattendance/{self.other_member.id}"),
+            self.other_member.id,
+        )
+
+        self.assertEqual(create_response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(get_response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(history_response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(delete_response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertTrue(Attendance.objects.filter(member=self.other_member).exists())
+
+    def test_payment_history_denies_another_users_member(self):
+        RecentPayment.objects.create(
+            user=self.other_user,
+            member=self.other_member,
+            amount=100,
+            payment_type="cash",
+        )
+
+        response = get_payment_history(
+            self.request_for_owner("get", f"/members/getpaymenthistory/{self.other_member.id}"),
+            self.other_member.id,
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    @patch("members.views.send_member_link")
+    def test_attendance_email_denies_another_users_member(self, send_link):
+        response = send_attendance_mail_member(
+            self.request_for_owner(
+                "post",
+                "/members/attendance-mail",
+                {"member_id": self.other_member.id},
+            )
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        send_link.assert_not_called()
+
+    @patch("members.views.threading.Thread")
+    def test_overdue_email_denies_another_users_member(self, thread):
+        response = notify_overdue_member(
+            self.request_for_owner(
+                "post",
+                "/members/overdue/notify",
+                {
+                    "id": self.other_member.id,
+                    "membership_end_date": str(date.today()),
+                    "overdue_amount": "100.00",
+                    "overdue_days": 1,
+                },
+            )
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        thread.assert_not_called()

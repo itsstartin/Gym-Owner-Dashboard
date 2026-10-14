@@ -10,6 +10,12 @@ import { CalendarDays, Eye, Pencil, ReceiptIndianRupee, User} from 'lucide-react
 
 function MemberCard(props) {
     const attendanceMarked = Boolean(props.member.has_attendance_today);
+    const health = props.member.health
+    const healthColor = health?.score >= 80
+      ? 'border-green-900 bg-green-950/40 text-green-400'
+      : health?.score >= 60
+        ? 'border-amber-900 bg-amber-950/30 text-amber-300'
+        : 'border-red-900 bg-red-950/30 text-red-300'
     const [viewProfile,setViewProfile] = useState()
     const [updateMember,setUpdateMember] = useState()
     const [historyType, setHistoryType] = useState()
@@ -88,6 +94,16 @@ function MemberCard(props) {
             <MemberTag plan={props.member.membership_plan.name}/>
             <MemberTag status={props.member.status}/>
         </div>
+        {health && <div className={'rounded-lg border p-3 ' + healthColor}>
+            <div className='flex items-center justify-between gap-3'>
+                <div>
+                    <p className='text-xs font-medium uppercase tracking-wide text-gray-400'>Member Health</p>
+                    <p className='mt-1 text-sm font-semibold'>{health.label}</p>
+                </div>
+                <span className='text-lg font-bold'>{health.score}/100</span>
+            </div>
+            <p className='mt-2 text-xs text-gray-300'>{health.reasons?.[0]}</p>
+        </div>}
         <div className='
         flex
         items-center

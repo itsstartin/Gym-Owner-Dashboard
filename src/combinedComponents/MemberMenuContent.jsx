@@ -14,6 +14,7 @@ function MemberMenuContent() {
     search: '',
     status: '',
     type: '',
+    health: '',
   })
   const markAttendanceState = useSelector((state)=>state.markAttendanceState.value)
   const dispatch = useDispatch()
@@ -50,7 +51,7 @@ function MemberMenuContent() {
   },[dispatch, refreshMembers])
 
   const filteredMembers = members.filter((obj)=>{
-    return obj.name.toLowerCase().includes(filterValue.search.toLowerCase()) && (filterValue.status==='' || obj.status===filterValue.status) && (filterValue.type==='' || obj.membership_plan.name===filterValue.type)
+    return obj.name.toLowerCase().includes(filterValue.search.toLowerCase()) && (filterValue.status==='' || obj.status===filterValue.status) && (filterValue.type==='' || obj.membership_plan.name===filterValue.type) && (filterValue.health === '' || obj.health?.is_at_risk)
   })
 
   const emptyTitle = members.length === 0 ? 'No members yet' : 'No matching members'

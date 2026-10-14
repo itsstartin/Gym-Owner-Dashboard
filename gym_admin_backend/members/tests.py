@@ -9,6 +9,7 @@ from rest_framework.test import APIRequestFactory, force_authenticate
 from members.models import Attendance, Member, MembershipPlan, RecentPayment
 from members.serializer import MemberSerializer
 from members.services.payment_calc import calc_data, calc_member_overdue, calc_overdue_amount
+from members.services.member_health import get_member_health
 from members.services.calc_graph import calc_graph
 from members.views import (
     create_payment,
@@ -77,6 +78,71 @@ class MemberStatusTests(TestCase):
         self.assertEqual(serializer.data["status"], "expired")
         self.assertEqual(overdue["overdue_days"], 10)
         self.assertEqual(overdue["overdue_amount"], "100.00")
+
+    def test_member_health_is_healthy_for_current_payments_and_recent_attendance(self):
+        member = self.create_member(
+            "Healthy Member",
+            "+910000000010",
+            "healthy@example.com",
+            total_cash_paid=600,
+            membership_start_date=date.today() - timedelta(days=10),
+        )
+        self.mark_attendance(member, date.today())
+
+        health = get_member_health(member)
+        serialized_health = MemberSerializer(member).data["health"]
+
+        self.assertEqual(health["score"], 100)
+        self.assertEqual(health["label"], "Healthy")
+        self.assertFalse(health["is_at_risk"])
+        self.assertIn("Payments are current", health["reasons"])
+        self.assertEqual(set(serialized_health), {"score", "label", "reasons", "days_remaining", "is_at_risk"})
+
+    def test_member_health_marks_inactive_members_as_at_risk(self):
+        member = self.create_member(
+            "Inactive Health Member",
+            "+910000000011",
+            "inactive-health@example.com",
+        )
+
+        health = get_member_health(member)
+
+        self.assertEqual(health["score"], 25)
+        self.assertEqual(health["label"], "At risk")
+        self.assertTrue(health["is_at_risk"])
+        self.assertIn("Membership is inactive", health["reasons"])
+
+    def test_member_health_marks_due_members_as_at_risk(self):
+        member = self.create_member(
+            "Due Health Member",
+            "+910000000012",
+            "due-health@example.com",
+            membership_start_date=date.today() - timedelta(days=28),
+        )
+        self.mark_attendance(member, date.today())
+
+        health = get_member_health(member)
+
+        self.assertEqual(health["score"], 55)
+        self.assertEqual(health["label"], "At risk")
+        self.assertTrue(health["is_at_risk"])
+        self.assertIn("Payment is due in 2 days", health["reasons"])
+
+    def test_member_health_marks_expired_members_as_at_risk(self):
+        member = self.create_member(
+            "Expired Health Member",
+            "+910000000013",
+            "expired-health@example.com",
+        )
+        membership_end_date = self.start_date + timedelta(days=30)
+        self.mark_attendance(member, membership_end_date + timedelta(days=1))
+
+        health = get_member_health(member)
+
+        self.assertEqual(health["score"], 0)
+        self.assertEqual(health["label"], "At risk")
+        self.assertTrue(health["is_at_risk"])
+        self.assertIn("Membership has expired", health["reasons"])
 
     def test_total_overdue_amount_excludes_inactive_members(self):
         self.create_member("Inactive Member", "+913333333333", "inactive-total@example.com")

@@ -3,6 +3,7 @@ from django.contrib.auth.password_validation import validate_password
 from rest_framework import serializers
 
 from members.services.payment_calc import get_member_payment_status
+from members.services.member_health import get_member_health
 from . models import Attendance, Member, Notification, RecentPayment, MembershipPlan
 
 class UserSerializer(serializers.ModelSerializer):
@@ -37,6 +38,7 @@ class MemberSerializer(serializers.ModelSerializer):
     overdue_days=serializers.SerializerMethodField()
     overdue_amount=serializers.SerializerMethodField()
     has_attendance_today=serializers.SerializerMethodField()
+    health=serializers.SerializerMethodField()
     class Meta:
         model = Member
         fields = '__all__'
@@ -64,6 +66,9 @@ class MemberSerializer(serializers.ModelSerializer):
 
     def get_has_attendance_today(self, obj):
         return bool(getattr(obj, "has_attendance_today", False))
+
+    def get_health(self, obj):
+        return get_member_health(obj, payment_status=self._payment_status(obj))
 
 class RecentPaymentSerializer(serializers.ModelSerializer):
     member_name = serializers.CharField(source='member.name', read_only=True)

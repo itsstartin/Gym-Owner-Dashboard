@@ -21,12 +21,10 @@ function SettingsMemberSection() {
         setIsLoading(true)
         try{
             await axios.post('members/attendance-mail',selectedMember).then((res)=>{
-                console.log(res.data)
             })
         }
         finally{
             setIsLoading(false)
-            console.log("Sent")
         }
     }
   return (
@@ -54,7 +52,7 @@ function SettingsMemberSection() {
                 {isLoading ?
                 <ClipLoader size={20} color='#fff'/>
                 :
-                <Send onClick={selectedMember.member_id!=='' ? (e)=>handleSubmit(e) :()=>console.log('Select Valid Member')}/>
+                <Send onClick={(e)=>selectedMember.member_id!=='' && handleSubmit(e)}/>
                 }
             </div>
         </div>

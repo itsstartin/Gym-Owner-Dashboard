@@ -33,11 +33,9 @@ function SignUp() {
             email: form.email,
             password: form.password,
           };
-          console.log(payload);
           const response = await axios.post('register/', payload)
           alert("User Created")
           navigate('/')
-          console.log("User Created and Saved",response.data)
           setForm({
             'username':"",
             'email':"",
@@ -45,7 +43,6 @@ function SignUp() {
             'confirmPassword':'',
         })
         }catch(error){
-          console.error(error.response.data)
           alert("Error saving data")
         }
       };

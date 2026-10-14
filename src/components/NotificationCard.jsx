@@ -10,7 +10,6 @@ function NotificationCard(props) {
             markRead(true)
         }
         catch(err){
-            console.error("Error marking notification:", err)
         }
     }
   return (

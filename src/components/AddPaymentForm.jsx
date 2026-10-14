@@ -23,21 +23,7 @@ function AddPaymentForm() {
     const handleSubmit = async (e)=>{
         e.preventDefault()
         try{
-            const responce = await axios.post('members/pay',paymentForm)
-            console.log("Saved", responce.data)
-            // const memberDet = await axios.get(`members/get/${paymentForm.member}`)
-            // const currentAmount = memberDet.data.total_cash_paid
-            // if (currentAmount === null) {
-            //     const updatedAmount = Number(paymentForm.amount)
-            //     const res = await axios.patch(`members/update/${paymentForm.member}`, { total_cash_paid: updatedAmount })
-            //     console.log(updatedAmount)
-            //     console.log("Saved", responce.data, "updated ", res.data)
-            // } else {
-            //     const updatedAmount = Number(currentAmount)+Number(paymentForm.amount)
-            //     const res = await axios.patch(`members/update/${paymentForm.member}`, { total_cash_paid: updatedAmount })
-            //     console.log(updatedAmount)
-            //     console.log("Saved", responce.data, "updated ", res.data)
-            // }
+            await axios.post('members/pay',paymentForm)
             setPaymentForm({
                 'member':'',
                 'amount':'',
@@ -46,7 +32,6 @@ function AddPaymentForm() {
             alert("Payment Added Successfully")
         }
         catch (error) {
-            console.error(error)
             alert("Error saving data")
         }
     }

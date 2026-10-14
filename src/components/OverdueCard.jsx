@@ -9,7 +9,6 @@ function OverdueCard(props) {
     setIsLoading(true)
     try{
       await axios.post('members/overdue/notify',obj).then(()=>{
-        console.log("Notified Overdue Member")
       }) 
     }
     finally{

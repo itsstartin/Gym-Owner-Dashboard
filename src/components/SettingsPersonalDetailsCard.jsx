@@ -8,11 +8,9 @@ function SettingsPersonalDetailsCard(props) {
     try{
         await axios.post("members/update-user-email",{"email":descValue})
         setEdit(false)
-        console.log("EMAIL UPDATED") 
     }
     catch(err){
       const errorMessage = err.response?.data?.error || "Something went wrong"
-      console.error(err);
       setEdit(false)
       alert(errorMessage)
     }

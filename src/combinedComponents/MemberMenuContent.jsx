@@ -7,6 +7,7 @@ import { Check, Plus } from 'lucide-react'
 import IconDescBtn from '../components/IconDescBtn'
 import { useDispatch, useSelector } from 'react-redux'
 import { markAttendanceOff, markAttendanceOn } from '../features/markAttendanceSlice'
+import { EmptyState, ErrorState, LoadingState } from '../components/AsyncState'
 
 function MemberMenuContent() {
   const [filterValue, setFilterValue] = useState({
@@ -17,11 +18,22 @@ function MemberMenuContent() {
   const markAttendanceState = useSelector((state)=>state.markAttendanceState.value)
   const dispatch = useDispatch()
   const [members, setMembers]=useState([])
-  const refreshMembers = useCallback(()=>{
-    getMembers().then((response)=>{
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState('')
+
+  const refreshMembers = useCallback(async ()=>{
+    setIsLoading(true)
+    setError('')
+    try {
+      const response = await getMembers()
       setMembers(response.data)
-    })
+    } catch {
+      setError('Unable to load members. Please try again.')
+    } finally {
+      setIsLoading(false)
+    }
   },[])
+
   const updateMemberAttendance = useCallback((memberId, hasAttendanceToday)=>{
     setMembers((currentMembers)=>currentMembers.map((member)=>
       member.id === memberId
@@ -36,10 +48,17 @@ function MemberMenuContent() {
       dispatch(markAttendanceOff())
     }
   },[dispatch, refreshMembers])
+
   const filteredMembers = members.filter((obj)=>{
     return obj.name.toLowerCase().includes(filterValue.search.toLowerCase()) && (filterValue.status==='' || obj.status===filterValue.status) && (filterValue.type==='' || obj.membership_plan.name===filterValue.type)
   })
-    return (
+
+  const emptyTitle = members.length === 0 ? 'No members yet' : 'No matching members'
+  const emptyMessage = members.length === 0
+    ? 'Add your first member to start managing your gym.'
+    : 'Try changing your search or filters.'
+
+  return (
     <div className='
     flex
     flex-col 
@@ -55,7 +74,6 @@ function MemberMenuContent() {
           grid
           grid-cols-1
           sm:grid-cols-2
-  
           '>
               <WelcomeHeader header="Member Management" desc="Manage your members and their details" />
               <div className='
@@ -71,9 +89,9 @@ function MemberMenuContent() {
                     dispatch(markAttendanceOn())
                   }} /> 
               </div>
-  
           </div>
         <MemberSearchBar filterValue={filterValue} setFilterValue={setFilterValue}/>
+        {isLoading ? <LoadingState message="Loading members..." /> : error ? <ErrorState message={error} onRetry={refreshMembers} /> :
         <div className='
         grid
         grid-cols-1
@@ -83,33 +101,20 @@ function MemberMenuContent() {
         overflow-y-auto
         pb-8
         content-start
-        
         '>
-            {
-            filteredMembers.length>0 ?
-            filteredMembers.map((obj)=>{
-              return <MemberCard
-                member={obj}
-                key={obj.id}
-                onMemberUpdated={refreshMembers}
-                onAttendanceChanged={updateMemberAttendance}
-              />
-            })
-            :
-            <div className='
-            col-span-1
-            flex
-            flex-col
-            justify-start
-            items-start
-            gap-2
-            '>
-              <h1 className='text-white text-xl font-bold'>No members found</h1>
-              <p className='text-gray-400 text-sm'>Please try again with different filters or search</p>
-            </div>
+            {filteredMembers.length > 0
+              ? filteredMembers.map((obj)=>(
+                <MemberCard
+                  member={obj}
+                  key={obj.id}
+                  onMemberUpdated={refreshMembers}
+                  onAttendanceChanged={updateMemberAttendance}
+                />
+              ))
+              : <div className='col-span-full'><EmptyState title={emptyTitle} message={emptyMessage} /></div>
             }
         </div>
-
+        }
     </div>
   )
 }

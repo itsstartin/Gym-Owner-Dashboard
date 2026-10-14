@@ -45,7 +45,6 @@ function UpdateMemberForm({member, onClose, onUpdated}) {
       onClose()
       alert('Member updated successfully')
     }catch(error){
-      console.error(error)
       alert(error.response?.data?.membership_plan_id || 'Error updating member')
     }finally{
       setIsSaving(false)

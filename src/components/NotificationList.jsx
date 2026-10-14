@@ -1,21 +1,40 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Bell, Search } from "lucide-react";
 import axios from '../axios'
 import NotificationCard from "./NotificationCard";
-
+import { EmptyState, ErrorState, LoadingState } from './AsyncState'
 
 export default function NotificationList() {
-    const [notifications, setNotifications] = useState();
-    useEffect(()=>{
-        axios.get('members/getnotifications').then((res)=>{
-            setNotifications(res.data)
-            console.log(res.data)
-        })
-    },[])
+  const [notifications, setNotifications] = useState([]);
   const [search, setSearch] = useState("");
-  const filtered = notifications ? notifications.filter((obj) =>
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState('')
+
+  const loadNotifications = useCallback(async () => {
+    setIsLoading(true)
+    setError('')
+    try {
+      const response = await axios.get('members/getnotifications')
+      setNotifications(response.data)
+    } catch {
+      setError('Unable to load notifications. Please try again.')
+    } finally {
+      setIsLoading(false)
+    }
+  }, [])
+
+  useEffect(()=>{
+    loadNotifications()
+  },[loadNotifications])
+
+  const filtered = notifications.filter((obj) =>
     obj.message.toLowerCase().includes(search.toLowerCase())
-  ) : ''
+  )
+
+  const emptyTitle = notifications.length === 0 ? 'No notifications yet' : 'No matching notifications'
+  const emptyMessage = notifications.length === 0
+    ? 'New member and payment updates will appear here.'
+    : 'Try a different search term.'
 
   return (
     <div className="flex min-h-screen w-full flex-col gap-6 p-4 sm:p-6 lg:p-8">
@@ -36,11 +55,14 @@ export default function NotificationList() {
         />
       </div>
 
+      {isLoading ? <LoadingState message="Loading notifications..." /> : error ? <ErrorState message={error} onRetry={loadNotifications} /> :
       <div className="space-y-3">
-        {notifications ? filtered.map((obj) => (
-          <NotificationCard key={obj.id} obj={obj}/>
-        )):<p className='text-sm text-gray-400'>Loading notifications...</p>}
+        {filtered.length > 0
+          ? filtered.map((obj) => <NotificationCard key={obj.id} obj={obj}/>)
+          : <EmptyState title={emptyTitle} message={emptyMessage} />
+        }
       </div>
+      }
     </div>
   );
 }

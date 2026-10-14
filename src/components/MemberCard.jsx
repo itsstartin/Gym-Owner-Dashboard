@@ -22,14 +22,12 @@ function MemberCard(props) {
         }).then(()=>{
             props.onAttendanceChanged(props.member.id, true)
         }).catch((err)=>{
-            console.log(err)
         })
     }
     const deleteAttendance = () => {
         axios.delete(`members/deleteattendance/${props.member.id}`).then(()=>{
             props.onAttendanceChanged(props.member.id, false)
         }).catch((err)=>{
-            console.log(err)
         })
     }
   return (

@@ -2,7 +2,6 @@ import React from 'react'
 
 function StatsCard(props) {
   const Icon = props.icon
-  console.log(props.num)
   return (
     <div
     className='

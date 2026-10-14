@@ -17,15 +17,12 @@ function MemberAccess() {
     }
     useEffect(()=>{
         axios.get(`members/member-access/${token}`).then((res)=>{
-            console.log(res.data)
             setMemberDetails(res.data)
         })
         axios.get(`members/member-access/${token}/getattendance`).then((res)=>{
-            res.data.length===0 ?
-            console.log(res.data) : 
-            setEnabled(true)
+            setEnabled(res.data.length > 0)
         })
-    },[])
+    },[token])
     return (
         <div className='fixed
         flex

@@ -24,9 +24,7 @@ function AddMemberForm() {
     const handleSubmit= async (e)=>{
         e.preventDefault();
         try{
-            console.log(memberForm.membership_start_date)
             const response = await axios.post('members/create',memberForm)
-            console.log("Saved",response.data)
             setMemberForm({
                 'name':"",
                 'email':"",
@@ -38,7 +36,6 @@ function AddMemberForm() {
             alert("Member Added successfully")
 
         }catch(error){
-            console.error(error)
             alert("Error saving data")
         }
         

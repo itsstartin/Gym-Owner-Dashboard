@@ -22,7 +22,6 @@ const LoginComp = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true)
-    console.log(form);
     // call your signup API here
     try{
       await axios.post('login/',form).then((res)=>{

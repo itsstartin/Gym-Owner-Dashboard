@@ -1,41 +1,49 @@
 import { CircleAlert, CircleCheckBig, CircleDollarSign, Clock4, Plus } from 'lucide-react'
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { useDispatch } from 'react-redux'
 import WelcomeHeader from '../components/WelcomeHeader'
 import IconDescBtn from '../components/IconDescBtn'
 import StatsCard from '../components/StatsCard'
-import GraphCard from '../components/GraphCard'
 import { addPaymentOn } from '../features/currentPageSlice'
 import axios from '../axios'
 import PaymentCard from '../components/PaymentCard'
 import OverdueCard from '../components/OverdueCard'
+import { EmptyState, ErrorState, LoadingState } from '../components/AsyncState'
 
 function PaymentsMenuContent() {
     const [recentPayments,setRecentPayments]=useState([])
     const [calcData,setCalcData]=useState({})
     const [overdueMembers,setOverdueMembers]=useState([])
     const [percentDiffData,setPercentDiffData]=useState({})
-    useEffect(()=>{
-        axios.get('members/getpayments').then((res)=>{
-            setRecentPayments(res.data)
-        })
-        axios.get('members/getcalc').then((res)=>{
-            setCalcData(res.data)
-        })
-        axios.get('members/overdue').then((res)=>{
-            setOverdueMembers(res.data)
-            console.log(res.data)
-        })
-        axios.get('members/getpercentstatdiff').then((res)=>{
-            setPercentDiffData(res.data)
-            console.log(res.data)
-        })
-    },[])
-    // const handleMember = async(id)=>{
-    //     const memberData =await axios.get(`members/get/${id}`)
-    //     return memberData.data
-    // }
+    const [isLoading, setIsLoading] = useState(true)
+    const [error, setError] = useState('')
     const dispatch = useDispatch()
+
+    const loadPayments = useCallback(async () => {
+        setIsLoading(true)
+        setError('')
+        try {
+            const [payments, calculation, overdue, percentDiff] = await Promise.all([
+                axios.get('members/getpayments'),
+                axios.get('members/getcalc'),
+                axios.get('members/overdue'),
+                axios.get('members/getpercentstatdiff'),
+            ])
+            setRecentPayments(payments.data)
+            setCalcData(calculation.data)
+            setOverdueMembers(overdue.data)
+            setPercentDiffData(percentDiff.data)
+        } catch {
+            setError('Unable to load payment data. Please try again.')
+        } finally {
+            setIsLoading(false)
+        }
+    }, [])
+
+    useEffect(()=>{
+        loadPayments()
+    },[loadPayments])
+
     return (
       <div className='
       flex
@@ -53,7 +61,6 @@ function PaymentsMenuContent() {
           grid-cols-1
           gap-4
           sm:grid-cols-2
-  
           '>
               <WelcomeHeader header="Payments" desc="Track and manage member payments" />
               <div className='
@@ -69,8 +76,9 @@ function PaymentsMenuContent() {
                   <IconDescBtn icon={Plus} label='Add Payment' onClick={()=>dispatch(addPaymentOn())}/>
                   </div>
               </div>
-  
           </div>
+
+          {isLoading ? <LoadingState message="Loading payment data..." /> : error ? <ErrorState message={error} onRetry={loadPayments} /> : <>
           <div className='
           grid
           grid-cols-1
@@ -78,10 +86,10 @@ function PaymentsMenuContent() {
           lg:grid-cols-4
           gap-5
           '>
-              <StatsCard icon={CircleAlert} title='Payments Overdue' num={`₹${calcData.overdue_amount || 0}`}/>
-              <StatsCard icon={CircleDollarSign} title='Total Revenue This Month' num={`₹${calcData.month_revenue || 0}`} percentDiff={percentDiffData.month_revenue_percent_diff || 0} percentFrom='last month'/>
+              <StatsCard icon={CircleAlert} title='Payments Overdue' num={'\u20B9' + (calcData.overdue_amount || 0)}/>
+              <StatsCard icon={CircleDollarSign} title='Total Revenue This Month' num={'\u20B9' + (calcData.month_revenue || 0)} percentDiff={percentDiffData.month_revenue_percent_diff || 0} percentFrom='last month'/>
               <StatsCard icon={CircleCheckBig} title='Completed Payments' num={calcData.payment_count || 0}/>
-              <StatsCard icon={Clock4} title="Payment in Advance" num={`₹${calcData.advance_amount || 0}`}/>
+              <StatsCard icon={Clock4} title="Payment in Advance" num={'\u20B9' + (calcData.advance_amount || 0)}/>
           </div>
           <div className='
           grid
@@ -95,14 +103,11 @@ function PaymentsMenuContent() {
                     <p className='text-sm text-gray-400'>Latest payment transactions from members</p>
                 </div>
                 <div className='flex flex-col gap-2 h-[310px] overflow-y-auto pr-1'>
-                {
-                    recentPayments.map((obj)=> {
-                        //    const data = handleMember(obj.member)
-                        //    console.log("the data is",data.name)
-                        return <PaymentCard data={obj}/>
-                    })}
+                  {recentPayments.length > 0
+                    ? recentPayments.map((obj) => <PaymentCard data={obj} key={obj.id}/>)
+                    : <EmptyState title="No payments yet" message="New payment transactions will appear here." />
+                  }
                 </div>
-
               </div>
               <div className='flex flex-col gap-4 border border-gray-800 bg-gray-900/50 p-4 rounded-xl h-[400px]'>
                 <div className='flex flex-col gap-1'>
@@ -110,17 +115,14 @@ function PaymentsMenuContent() {
                     <p className='text-sm text-gray-400'>Members with outstanding payments</p>
                 </div>
                 <div className='flex flex-col gap-2 h-[310px] overflow-y-auto pr-1'>
-                {
-                overdueMembers.map((obj)=> {
-                //    const data = handleMember(obj.member)
-                //    console.log("the data is",data.name)
-                   return <OverdueCard obj={obj}/>
-                })}
+                  {overdueMembers.length > 0
+                    ? overdueMembers.map((obj) => <OverdueCard obj={obj} key={obj.id}/>)
+                    : <EmptyState title="No overdue payments" message="All member payments are up to date." />
+                  }
                 </div>
-
               </div>
           </div>
-  
+          </>}
       </div>
     )
 }

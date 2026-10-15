@@ -28,6 +28,41 @@ class GymUserProfile(models.Model):
         return f'{self.user.username} ({self.get_role_display()})'
 
 
+class AuditLog(models.Model):
+    MEMBER_CREATED = 'member_created'
+    MEMBER_UPDATED = 'member_updated'
+    PAYMENT_RECORDED = 'payment_recorded'
+    ATTENDANCE_MARKED = 'attendance_marked'
+    ATTENDANCE_REMOVED = 'attendance_removed'
+    SETTINGS_UPDATED = 'settings_updated'
+    ACTION_CHOICES = [
+        (MEMBER_CREATED, 'Member created'),
+        (MEMBER_UPDATED, 'Member updated'),
+        (PAYMENT_RECORDED, 'Payment recorded'),
+        (ATTENDANCE_MARKED, 'Attendance marked'),
+        (ATTENDANCE_REMOVED, 'Attendance removed'),
+        (SETTINGS_UPDATED, 'Settings updated'),
+    ]
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='audit_logs')
+    actor = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='actions_performed')
+    # Used for actions performed outside an authenticated staff session.
+    actor_label = models.CharField(max_length=255, blank=True)
+    action = models.CharField(max_length=32, choices=ACTION_CHOICES)
+    target_type = models.CharField(max_length=32)
+    target_id = models.PositiveBigIntegerField(null=True, blank=True)
+    target_name = models.CharField(max_length=255)
+    metadata_summary = models.CharField(max_length=255, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['user', 'created_at'], name='audit_user_created_idx'),
+            models.Index(fields=['user', 'action', 'created_at'], name='audit_user_action_idx'),
+        ]
+
+
 class Member(models.Model):
     user = models.ForeignKey(User,on_delete=models.CASCADE)
     name = models.CharField(max_length=50)

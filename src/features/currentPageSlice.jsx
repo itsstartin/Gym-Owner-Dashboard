@@ -11,9 +11,10 @@ const currentPageSlice = createSlice({
         addMemberOn:(state)=>{state.value='addMember'},
         addPaymentOn:(state)=>{state.value='addPayment'},
         notificationsOn:(state)=>{state.value='Notifications'},
+        auditLogsOn:(state)=>{state.value='AuditLogs'},
         settingsOn:(state)=>{state.value='Settings'},
         logoutOn:(state)=>{state.value='logout'},
     }
 })
-export const {dashboardOn,membersOn,membersWithFilters,paymentsOn,reportsOn, addMemberOn, addPaymentOn,notificationsOn,settingsOn, logoutOn} = currentPageSlice.actions;
+export const {dashboardOn,membersOn,membersWithFilters,paymentsOn,reportsOn, addMemberOn, addPaymentOn,notificationsOn,auditLogsOn,settingsOn, logoutOn} = currentPageSlice.actions;
 export default currentPageSlice.reducer;

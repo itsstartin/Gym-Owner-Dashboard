@@ -1,6 +1,7 @@
 from django.contrib.auth.models import User
 from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
+from django.core.paginator import EmptyPage, Paginator
 from django.shortcuts import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import api_view , permission_classes
@@ -12,10 +13,11 @@ from members.services.calc_graph import calc_graph
 from members.services.percent_stat_diff import calc_percent_diff_data
 from members.services.member_access import send_mail_overdue_member, send_member_link
 from members.services.notification_service import check_expired_members, check_inactive_members
+from members.services.audit_log import record_audit_log
 from members.permissions import MemberViewer, OwnerOnly, OwnerOrFrontDesk, get_user_role
 from members.services.payment_calc import calc_data, calc_member_overdue, calc_member_period_payment_total, calc_member_plan_transfer_amount, get_member_payment_status
-from . models import Attendance, Member , MembershipPlan, Notification, RecentPayment
-from . serializer import AttendanceSerializer, NotificationSerializer, UserSerializer ,MemberSerializer, RecentPaymentSerializer , MembershipPlanSerializer
+from . models import Attendance, AuditLog, Member, MembershipPlan, Notification, RecentPayment
+from . serializer import AuditLogSerializer, AttendanceSerializer, NotificationSerializer, UserSerializer, MemberSerializer, RecentPaymentSerializer, MembershipPlanSerializer
 from datetime import date
 import threading
 
@@ -131,6 +133,16 @@ def update_member(request,id):
     member = get_object_or_404(Member, id=id, user=request.user)
     serializer = MemberSerializer(member, data =request.data ,partial=True)
     if serializer.is_valid():
+        changed_field_labels = {
+            field: label for field, label in {
+                "name": "name",
+                "email": "email",
+                "phone_number": "phone number",
+                "membership_plan": "membership plan",
+                "membership_start_date": "membership start date",
+            }.items()
+            if field in serializer.validated_data
+        }
         new_plan = serializer.validated_data.get("membership_plan")
         plan_changed = new_plan is not None and new_plan.id != member.membership_plan_id
 
@@ -149,6 +161,18 @@ def update_member(request,id):
             )
         else:
             serializer.save()
+        record_audit_log(
+            user=request.user,
+            actor=request.user,
+            action=AuditLog.MEMBER_UPDATED,
+            target_type="member",
+            target_id=member.id,
+            target_name=member.name,
+            metadata_summary=(
+                "Updated: " + ", ".join(changed_field_labels.values())
+                if changed_field_labels else "Updated member details"
+            ),
+        )
         return Response(serializer.data,status=status.HTTP_202_ACCEPTED)
     return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
 
@@ -159,6 +183,15 @@ def create_member(request):
     serializer = MemberSerializer(data=request.data)
     if serializer.is_valid():
         member = serializer.save(user=request.user)
+        record_audit_log(
+            user=request.user,
+            actor=request.user,
+            action=AuditLog.MEMBER_CREATED,
+            target_type="member",
+            target_id=member.id,
+            target_name=member.name,
+            metadata_summary="Member profile created",
+        )
         return Response(serializer.data,status=status.HTTP_201_CREATED)
     return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
 
@@ -183,6 +216,15 @@ def create_payment(request):
         total_cash_paid = calc_member_period_payment_total(request.user, member)
         member.total_cash_paid = total_cash_paid
         member.save(update_fields=update_fields)
+        record_audit_log(
+            user=request.user,
+            actor=request.user,
+            action=AuditLog.PAYMENT_RECORDED,
+            target_type="member",
+            target_id=member.id,
+            target_name=member.name,
+            metadata_summary=f"Payment recorded via {payment.get_payment_type_display()}",
+        )
         return Response(serializer.data,status=status.HTTP_201_CREATED)
     return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
 
@@ -198,20 +240,39 @@ def mark_attendance(request):
         )
         if Attendance.objects.filter(user=request.user,member=member,date__date=date.today()).exists():
             return Response({"msg":"Attendance already marked"},status=status.HTTP_400_BAD_REQUEST)
-        serializer.save(user=request.user, member=member)
+        attendance = serializer.save(user=request.user, member=member)
+        record_audit_log(
+            user=request.user,
+            actor=request.user,
+            action=AuditLog.ATTENDANCE_MARKED,
+            target_type="member",
+            target_id=member.id,
+            target_name=member.name,
+            metadata_summary=f"Attendance marked for {attendance.date.date().isoformat()}",
+        )
         return Response(serializer.data,status=status.HTTP_201_CREATED)
     return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated, OwnerOrFrontDesk])
 def delete_attendance(request,id):
-    get_object_or_404(Member, id=id, user=request.user)
+    member = get_object_or_404(Member, id=id, user=request.user)
     attendance = Attendance.objects.filter(
         user=request.user,
         member=id,
         date__date=date.today()
     )
-    attendance.delete()
+    deleted_count, _ = attendance.delete()
+    if deleted_count:
+        record_audit_log(
+            user=request.user,
+            actor=request.user,
+            action=AuditLog.ATTENDANCE_REMOVED,
+            target_type="member",
+            target_id=member.id,
+            target_name=member.name,
+            metadata_summary=f"Attendance removed for {date.today().isoformat()}",
+        )
     return Response(status=status.HTTP_204_NO_CONTENT)
 
 @api_view(['GET'])
@@ -282,7 +343,17 @@ def member_access_mark_attendance(request,token):
         member = serializer.validated_data['member']
         if Attendance.objects.filter(user=member.user,member=member,date__date=date.today()).exists():
             return Response({"msg":"Attendance already marked"},status=status.HTTP_400_BAD_REQUEST)
-        serializer.save(user=member.user)
+        attendance = serializer.save(user=member.user)
+        record_audit_log(
+            user=member.user,
+            actor=None,
+            actor_label=f"Member: {member.name}",
+            action=AuditLog.ATTENDANCE_MARKED,
+            target_type="member",
+            target_id=member.id,
+            target_name=member.name,
+            metadata_summary=f"Self-service attendance marked for {attendance.date.date().isoformat()}",
+        )
         return Response(serializer.data,status=status.HTTP_201_CREATED)
     return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
 
@@ -357,6 +428,15 @@ def update_user_email(request):
     user=request.user
     user.email=new_email
     user.save()
+    record_audit_log(
+        user=user,
+        actor=user,
+        action=AuditLog.SETTINGS_UPDATED,
+        target_type="user",
+        target_id=user.id,
+        target_name=user.username,
+        metadata_summary="Email setting updated",
+    )
     return Response({
         "msg":"Email updated successfully",
         "email":user.email
@@ -367,3 +447,45 @@ def update_user_email(request):
 def get_percent_stat_diff(request):
     data = calc_percent_diff_data(request.user)
     return Response(data,status=status.HTTP_200_OK)
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated, OwnerOnly])
+def get_audit_logs(request):
+    action = request.query_params.get("action", "").strip()
+    selected_date = request.query_params.get("date", "").strip()
+    logs = AuditLog.objects.filter(user=request.user).select_related("actor")
+
+    if action:
+        valid_actions = {value for value, _ in AuditLog.ACTION_CHOICES}
+        if action not in valid_actions:
+            return Response({"action": "Unknown audit action."}, status=status.HTTP_400_BAD_REQUEST)
+        logs = logs.filter(action=action)
+
+    if selected_date:
+        try:
+            filter_date = date.fromisoformat(selected_date)
+        except ValueError:
+            return Response({"date": "Use YYYY-MM-DD."}, status=status.HTTP_400_BAD_REQUEST)
+        logs = logs.filter(created_at__date=filter_date)
+
+    try:
+        page_number = max(int(request.query_params.get("page", 1)), 1)
+    except (TypeError, ValueError):
+        return Response({"page": "Page must be a positive integer."}, status=status.HTTP_400_BAD_REQUEST)
+
+    paginator = Paginator(logs, 25)
+    try:
+        page = paginator.page(page_number)
+    except EmptyPage:
+        page = paginator.page(paginator.num_pages) if paginator.num_pages else None
+
+    entries = page.object_list if page else []
+    return Response({
+        "results": AuditLogSerializer(entries, many=True).data,
+        "pagination": {
+            "page": page.number if page else 1,
+            "page_size": 25,
+            "total": paginator.count,
+            "total_pages": paginator.num_pages,
+        },
+    })

@@ -4,7 +4,7 @@ from rest_framework import serializers
 
 from members.services.payment_calc import get_member_payment_status
 from members.services.member_health import get_member_health
-from . models import Attendance, GymUserProfile, Member, Notification, RecentPayment, MembershipPlan
+from . models import Attendance, AuditLog, GymUserProfile, Member, Notification, RecentPayment, MembershipPlan
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -101,3 +101,20 @@ class NotificationSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             'user': {'read_only': True}
         }
+
+
+class AuditLogSerializer(serializers.ModelSerializer):
+    actor_username = serializers.SerializerMethodField()
+    action_label = serializers.CharField(source='get_action_display', read_only=True)
+
+    def get_actor_username(self, obj):
+        if obj.actor:
+            return obj.actor.username
+        return obj.actor_label or 'System'
+
+    class Meta:
+        model = AuditLog
+        fields = [
+            'id', 'actor_username', 'action', 'action_label', 'target_type',
+            'target_id', 'target_name', 'metadata_summary', 'created_at',
+        ]

@@ -6,15 +6,18 @@ from datetime import date, datetime, time, timedelta
 from rest_framework import status
 from rest_framework.test import APIRequestFactory, force_authenticate
 
-from members.models import Attendance, GymUserProfile, Member, MembershipPlan, RecentPayment
+from members.models import Attendance, AuditLog, GymUserProfile, Member, MembershipPlan, RecentPayment
 from members.serializer import MemberSerializer
 from members.permissions import get_user_role
+from members.services.audit_log import record_audit_log
 from members.services.payment_calc import calc_data, calc_member_overdue, calc_overdue_amount
 from members.services.member_health import get_member_health
 from members.services.calc_graph import calc_graph
 from members.views import (
+    create_member,
     create_payment,
     delete_attendance,
+    get_audit_logs,
     get_attendance,
     current_user,
     get_attendance_history,
@@ -28,6 +31,7 @@ from members.views import (
     get_percent_stat_diff,
     update_user_email,
     mark_attendance,
+    member_access_mark_attendance,
     notify_overdue_member,
     send_attendance_mail_member,
     update_member,
@@ -679,3 +683,128 @@ class RolePermissionTests(TestCase):
         self.assertEqual(graph_response.status_code, status.HTTP_200_OK)
         self.assertEqual(calculation_response.status_code, status.HTTP_200_OK)
         self.assertEqual(user_response.data["role"], GymUserProfile.OWNER)
+
+class AuditLogTests(TestCase):
+    def setUp(self):
+        self.owner = User.objects.create_user(username="audit-owner", password="pass")
+        self.front_desk = User.objects.create_user(username="audit-desk", password="pass")
+        self.front_desk.gym_profile.role = GymUserProfile.FRONT_DESK
+        self.front_desk.gym_profile.save(update_fields=["role"])
+        self.plan = MembershipPlan.objects.create(name="Audit Plan", plan_price=300)
+        self.member = Member.objects.create(
+            user=self.owner,
+            name="Audit Member",
+            phone_number="+910000007777",
+            email="audit-member@example.com",
+            membership_plan=self.plan,
+            membership_start_date=date.today(),
+        )
+        self.factory = APIRequestFactory()
+
+    def request_for(self, user, method, path, data=None):
+        request = getattr(self.factory, method)(path, data or {}, format="json")
+        force_authenticate(request, user=user)
+        return request
+
+    def test_important_mutations_create_non_sensitive_audit_entries(self):
+        create_response = create_member(
+            self.request_for(self.owner, "post", "/members/create", {
+                "name": "Created Member", "phone_number": "+910000007776",
+                "email": "created-member@example.com", "membership_plan_id": self.plan.id,
+                "membership_start_date": str(date.today()),
+            })
+        )
+        update_response = update_member(
+            self.request_for(self.owner, "patch", f"/members/update/{self.member.id}", {
+                "email": "updated-audit-member@example.com",
+            }), self.member.id,
+        )
+        payment_response = create_payment(
+            self.request_for(self.owner, "post", "/members/pay", {
+                "member": self.member.id, "amount": 300, "payment_type": "cash",
+            })
+        )
+        attendance_response = mark_attendance(
+            self.request_for(self.owner, "post", "/members/markattendance", {
+                "member": self.member.id, "date": timezone.now().isoformat(),
+            })
+        )
+        deletion_response = delete_attendance(
+            self.request_for(self.owner, "delete", f"/members/deleteattendance/{self.member.id}"), self.member.id,
+        )
+        settings_response = update_user_email(
+            self.request_for(self.owner, "post", "/members/update-user-email", {
+                "email": "audit-owner-updated@example.com",
+            })
+        )
+
+        self.assertEqual(create_response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(update_response.status_code, status.HTTP_202_ACCEPTED)
+        self.assertEqual(payment_response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(attendance_response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(deletion_response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(settings_response.status_code, status.HTTP_200_OK)
+        self.assertEqual(set(AuditLog.objects.values_list("action", flat=True)), {
+            AuditLog.MEMBER_CREATED, AuditLog.MEMBER_UPDATED, AuditLog.PAYMENT_RECORDED,
+            AuditLog.ATTENDANCE_MARKED, AuditLog.ATTENDANCE_REMOVED, AuditLog.SETTINGS_UPDATED,
+        })
+        summaries = " ".join(AuditLog.objects.values_list("metadata_summary", flat=True))
+        self.assertNotIn("updated-audit-member@example.com", summaries)
+        self.assertNotIn("audit-owner-updated@example.com", summaries)
+        self.assertNotIn("pass", summaries.lower())
+        self.assertNotIn("token", summaries.lower())
+
+    def test_audit_listing_is_owner_only_and_supports_filters_and_pagination(self):
+        for index in range(26):
+            AuditLog.objects.create(
+                user=self.owner, actor=self.owner,
+                action=AuditLog.MEMBER_CREATED if index < 25 else AuditLog.SETTINGS_UPDATED,
+                target_type="member", target_id=index + 1, target_name=f"Member {index + 1}",
+                metadata_summary="Created member profile",
+            )
+
+        first_page = get_audit_logs(self.request_for(self.owner, "get", "/members/audit-logs"))
+        second_page = get_audit_logs(self.request_for(self.owner, "get", "/members/audit-logs?page=2"))
+        action_filter = get_audit_logs(
+            self.request_for(self.owner, "get", "/members/audit-logs", {"action": AuditLog.SETTINGS_UPDATED})
+        )
+        date_filter = get_audit_logs(
+            self.request_for(self.owner, "get", "/members/audit-logs", {"date": str(date.today())})
+        )
+        denied = get_audit_logs(self.request_for(self.front_desk, "get", "/members/audit-logs"))
+
+        self.assertEqual(first_page.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(first_page.data["results"]), 25)
+        self.assertEqual(first_page.data["pagination"]["total"], 26)
+        self.assertEqual(len(second_page.data["results"]), 1)
+        self.assertEqual(len(action_filter.data["results"]), 1)
+        self.assertEqual(date_filter.data["pagination"]["total"], 26)
+        self.assertEqual(denied.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_member_self_service_check_in_records_the_member_as_actor(self):
+        request = self.factory.post(
+            f"/members/member-access/{self.member.access_token}/markattendance",
+            {"date": timezone.now().isoformat()},
+            format="json",
+        )
+
+        response = member_access_mark_attendance(request, str(self.member.access_token))
+        entry = AuditLog.objects.get(action=AuditLog.ATTENDANCE_MARKED)
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertIsNone(entry.actor)
+        self.assertEqual(entry.actor_label, "Member: Audit Member")
+        self.assertEqual(entry.target_id, self.member.id)
+
+    def test_sensitive_metadata_is_omitted_by_the_audit_helper(self):
+        entry = record_audit_log(
+            user=self.owner,
+            actor=self.owner,
+            action=AuditLog.SETTINGS_UPDATED,
+            target_type="user",
+            target_id=self.owner.id,
+            target_name=self.owner.username,
+            metadata_summary="password=do-not-store-this JWT=do-not-store-this-either",
+        )
+
+        self.assertEqual(entry.metadata_summary, "Sensitive detail omitted")

@@ -12,6 +12,7 @@ const PaymentsMenuContent = lazy(() => import('../combinedComponents/PaymentsMen
 const ReportsMenuContent = lazy(() => import('../combinedComponents/ReportsMenuContent'))
 const SettingsMenuContent = lazy(() => import('../combinedComponents/SettingsMenuContent'))
 const NotificationMenuContent = lazy(() => import('../combinedComponents/NotificationMenuContent'))
+const AuditLogContent = lazy(() => import('../combinedComponents/AuditLogContent'))
 const AddMemberForm = lazy(() => import('../components/AddMemberForm'))
 const AddPaymentForm = lazy(() => import('../components/AddPaymentForm'))
 const LoginComp = lazy(() => import('../components/LoginComp'))
@@ -22,7 +23,7 @@ const LogoutBox = lazy(() => import('../components/LogoutBox'))
 
 function MainPage() {
   const currentPageState = useSelector((state)=>state.currentPageState.value)
-  const { isLoading: isRoleLoading, dashboard, members, payments, reports, notifications, settings, manageMembers, managePayments } = useRoleAccess()
+  const { isLoading: isRoleLoading, dashboard, members, payments, reports, notifications, auditLogs, settings, manageMembers, managePayments } = useRoleAccess()
   if (isRoleLoading) {
     return <div className='flex min-h-screen w-full items-center justify-center bg-gray-950 text-gray-400'>Loading workspace...</div>
   }
@@ -71,6 +72,9 @@ function MainPage() {
               :
               currentPageState==='Notifications' && notifications ?
               <NotificationMenuContent/>
+              :
+              currentPageState==='AuditLogs' && auditLogs ?
+              <AuditLogContent/>
               :
               currentPageState==='Settings' && settings ?
               <SettingsMenuContent/>

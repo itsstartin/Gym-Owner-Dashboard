@@ -2,14 +2,14 @@ import React from 'react'
 import GymIcon from '../components/GymIcon'
 import IconDescBtn from '../components/IconDescBtn'
 import { useDispatch, useSelector } from 'react-redux'
-import { Bell, ChartColumn, CreditCard, LayoutDashboard,  LogOut,  Settings, Users } from 'lucide-react';
-import { dashboardOn, membersOn, paymentsOn, reportsOn, logoutOn, settingsOn, notificationsOn } from '../features/currentPageSlice';
+import { Bell, ChartColumn, ClipboardList, CreditCard, LayoutDashboard,  LogOut,  Settings, Users } from 'lucide-react';
+import { dashboardOn, membersOn, paymentsOn, reportsOn, logoutOn, settingsOn, notificationsOn, auditLogsOn } from '../features/currentPageSlice';
 import { useRoleAccess } from '../features/roleAccess';
 
 function SideBar() {
   const sidebarState = useSelector((state)=>state.sidebarState.value)
   const dispatch = useDispatch()
-  const { dashboard, members, payments, reports, notifications, settings } = useRoleAccess()
+  const { dashboard, members, payments, reports, notifications, auditLogs, settings } = useRoleAccess()
 
   return (
     <div className={`
@@ -59,6 +59,7 @@ function SideBar() {
         w-full
         '>
             {notifications && <IconDescBtn sb icon={Bell} label='Notifications' onClick={()=>dispatch(notificationsOn())}/>}
+            {auditLogs && <IconDescBtn sb icon={ClipboardList} label='Audit Log' onClick={()=>dispatch(auditLogsOn())}/>}
             {settings && <IconDescBtn sb icon={Settings} label='Settings' onClick={()=>dispatch(settingsOn())}/>}
             <IconDescBtn sb icon={LogOut} label='Logout' onClick={()=>dispatch(logoutOn())}/>
         </div>

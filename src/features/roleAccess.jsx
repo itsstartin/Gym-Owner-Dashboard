@@ -18,6 +18,7 @@ const ROLE_CAPABILITIES = {
     payments: true,
     reports: true,
     notifications: true,
+    auditLogs: true,
     settings: true,
     manageMembers: true,
     managePayments: true,

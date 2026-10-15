@@ -59,16 +59,17 @@ function MemberCard(props) {
         gap-3
         '>
             
-            <div className='rounded-lg bg-gray-800 p-2 text-green-500'><User size={22}/></div>
+            <div className='shrink-0 rounded-lg bg-gray-800 p-2 text-green-500'><User size={22}/></div>
             <div className='
             flex
             flex-col
-            w-full
+            min-w-0
+            flex-1
             '>  
-                <h1 className='font-semibold'>{props.member.name}</h1>
+                <h1 className='truncate font-semibold'>{props.member.name}</h1>
                 <p className='truncate text-sm text-gray-400'>{props.member.email}</p>
             </div>
-            <div className='flex items-start gap-1'>
+            <div className='flex shrink-0 items-start gap-1'>
               <button type='button' aria-label='Attendance history' title='Attendance history' className='rounded-md p-1.5 text-gray-400 hover:bg-gray-800 hover:text-white' onClick={()=>setHistoryType('attendance')}>
                 <CalendarDays size={18}/>
               </button>

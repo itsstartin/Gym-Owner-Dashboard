@@ -1,4 +1,4 @@
--- Neon SQL Editor seed for the CURRENT Django schema (members migration 0024).
+-- Neon SQL Editor seed for the CURRENT Django schema (members migration 0025).
 --
 -- Prerequisite: deploy and run `python manage.py migrate` first.  Migrations
 -- create the tables, but they do not create MembershipPlan rows.
@@ -121,8 +121,10 @@ VALUES
 ON CONFLICT (name) DO UPDATE
 SET plan_price = EXCLUDED.plan_price;
 
--- Twenty stable member identities.  The access tokens are deterministic UUIDs
--- so repeated pastes keep the same rows instead of consuming new ones.
+-- Twenty stable member identities. The access tokens are deterministic UUIDs
+-- so repeated pastes keep the same rows instead of consuming new ones. Their
+-- seven-day expiry matches the current Django default; change the interval
+-- below if the deployed MEMBER_ACCESS_LINK_LIFETIME_DAYS setting is custom.
 WITH seed_members(name, phone_number, email, plan_name, start_days_ago) AS (
     VALUES
         ('Arjun Nair',       '+919801000001', 'arjun.nair.seed@example.com',       'Basic',   12),

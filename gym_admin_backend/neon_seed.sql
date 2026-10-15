@@ -1,14 +1,14 @@
--- Neon SQL Editor seed for the CURRENT Django schema (members migration 0021).
+-- Neon SQL Editor seed for the CURRENT Django schema (members migration 0024).
 --
 -- Prerequisite: deploy and run `python manage.py migrate` first.  Migrations
 -- create the tables, but they do not create MembershipPlan rows.
 --
--- This creates the normal application user `salim` with password `123` (it is
--- not a Django-admin superuser), three plans, 20 members, 48 payments, and
--- 40 attendance records.  Each application data table remains under 50 rows.
--- The script is safe to paste again: it updates the seed user/plans/members
--- and does not add another set of payment or attendance records for a member
--- that already has records.
+-- This creates the normal application owner `salim` with password `123` (it
+-- is not a Django-admin superuser), three plans, 20 members, 48 payments, 40
+-- attendance records, six notifications, and 12 audit-log entries. Each
+-- application data table remains under 50 rows. The script is safe to paste
+-- again: it updates the seed user/plans/members and does not add another set
+-- of payment or attendance records for a member that already has records.
 --
 -- The password is a Django 6.0.2 PBKDF2-SHA256 hash for the literal password
 -- `123`; do not change it to plain text.
@@ -24,7 +24,10 @@ BEGIN
        OR to_regclass('public.members_membershipplan') IS NULL
        OR to_regclass('public.members_member') IS NULL
        OR to_regclass('public.members_recentpayment') IS NULL
-       OR to_regclass('public.members_attendance') IS NULL THEN
+       OR to_regclass('public.members_attendance') IS NULL
+       OR to_regclass('public.members_notification') IS NULL
+       OR to_regclass('public.members_gymuserprofile') IS NULL
+       OR to_regclass('public.members_auditlog') IS NULL THEN
         RAISE EXCEPTION 'Required Django tables are missing. Run python manage.py migrate on the deployed app first.';
     END IF;
 
@@ -34,17 +37,45 @@ BEGIN
             VALUES
                 ('auth_user', 'password'),
                 ('auth_user', 'username'),
+                ('auth_user', 'email'),
+                ('auth_user', 'is_active'),
                 ('auth_user', 'date_joined'),
+                ('members_membershipplan', 'name'),
+                ('members_membershipplan', 'plan_price'),
                 ('members_member', 'user_id'),
+                ('members_member', 'name'),
+                ('members_member', 'phone_number'),
+                ('members_member', 'email'),
                 ('members_member', 'membership_plan_id'),
+                ('members_member', 'total_cash_paid'),
                 ('members_member', 'membership_start_date'),
                 ('members_member', 'access_token'),
+                ('members_member', 'access_token_expires_at'),
                 ('members_recentpayment', 'user_id'),
                 ('members_recentpayment', 'member_id'),
+                ('members_recentpayment', 'amount'),
+                ('members_recentpayment', 'payment_type'),
                 ('members_recentpayment', 'created_at'),
                 ('members_attendance', 'user_id'),
                 ('members_attendance', 'member_id'),
-                ('members_attendance', 'date')
+                ('members_attendance', 'date'),
+                ('members_notification', 'user_id'),
+                ('members_notification', 'member_id'),
+                ('members_notification', 'type'),
+                ('members_notification', 'message'),
+                ('members_notification', 'is_read'),
+                ('members_notification', 'created_at'),
+                ('members_gymuserprofile', 'user_id'),
+                ('members_gymuserprofile', 'role'),
+                ('members_auditlog', 'user_id'),
+                ('members_auditlog', 'actor_id'),
+                ('members_auditlog', 'actor_label'),
+                ('members_auditlog', 'action'),
+                ('members_auditlog', 'target_type'),
+                ('members_auditlog', 'target_id'),
+                ('members_auditlog', 'target_name'),
+                ('members_auditlog', 'metadata_summary'),
+                ('members_auditlog', 'created_at')
         ) AS required_columns(table_name, column_name)
         LEFT JOIN information_schema.columns AS actual
           ON actual.table_schema = 'public'
@@ -70,6 +101,15 @@ ON CONFLICT (username) DO UPDATE
 SET password = EXCLUDED.password,
     email = EXCLUDED.email,
     is_active = TRUE;
+
+-- The profile is normally created during sign-up. A direct SQL seed needs
+-- to create it explicitly so the role permissions work immediately.
+INSERT INTO members_gymuserprofile (user_id, role)
+SELECT id, 'owner'
+FROM auth_user
+WHERE username = 'salim'
+ON CONFLICT (user_id) DO UPDATE
+SET role = EXCLUDED.role;
 
 -- Required plan rows.  The project migrations create the table only; these
 -- INSERTs create/update the actual plans used by members.
@@ -108,7 +148,7 @@ WITH seed_members(name, phone_number, email, plan_name, start_days_ago) AS (
 )
 INSERT INTO members_member (
     user_id, name, phone_number, email, membership_plan_id, total_cash_paid,
-    created_at, membership_start_date, access_token
+    created_at, membership_start_date, access_token, access_token_expires_at
 )
 SELECT
     account.id,
@@ -119,16 +159,22 @@ SELECT
     0.0,
     CURRENT_TIMESTAMP - make_interval(days => seed.start_days_ago),
     CURRENT_DATE - seed.start_days_ago,
-    md5('gym-admin-neon-seed:' || seed.phone_number)::uuid
+    md5('gym-admin-neon-seed:' || seed.phone_number)::uuid,
+    CURRENT_TIMESTAMP + INTERVAL '7 days'
 FROM seed_members AS seed
 CROSS JOIN (SELECT id FROM auth_user WHERE username = 'salim') AS account
 JOIN members_membershipplan AS plan ON plan.name = seed.plan_name
-ON CONFLICT (phone_number) DO UPDATE
+-- Email is the stable seed identity. Using it here prevents a phone-number
+-- collision from silently taking ownership of a real member on a live DB.
+ON CONFLICT (email) DO UPDATE
 SET user_id = EXCLUDED.user_id,
     name = EXCLUDED.name,
+    phone_number = EXCLUDED.phone_number,
     email = EXCLUDED.email,
     membership_plan_id = EXCLUDED.membership_plan_id,
-    membership_start_date = EXCLUDED.membership_start_date;
+    membership_start_date = EXCLUDED.membership_start_date,
+    access_token = EXCLUDED.access_token,
+    access_token_expires_at = EXCLUDED.access_token_expires_at;
 
 -- 48 payment rows (below the 50-record limit).  Different paid-month counts
 -- produce a mix of active, advance, due, and expired member states.  A rerun
@@ -220,6 +266,69 @@ WHERE NOT EXISTS (
     WHERE existing.member_id = row.member_id
 );
 
+-- Seed the notification states used by the dashboard. The messages follow the
+-- same shapes produced by notification_service.py, while the existence check
+-- keeps a rerun from adding duplicates.
+WITH notification_seed(phone_number, type, message, is_read, days_ago) AS (
+    VALUES
+        ('+919801000004', 'inactive', 'Aditya Menon has not attended for 15 days', FALSE, 1),
+        ('+919801000007', 'inactive', 'Kiran Varma has not attended for 20 days', FALSE, 2),
+        ('+919801000010', 'inactive', 'Anil Joseph has not attended for 18 days', TRUE, 3),
+        ('+919801000013', 'expired', 'Manoj Kumar''s membership expired 79 days ago', FALSE, 4),
+        ('+919801000014', 'expired', 'Sreejith P''s membership expired 88 days ago', FALSE, 5),
+        ('+919801000019', 'expired', 'Vivek Anand''s membership expired 91 days ago', TRUE, 6)
+)
+INSERT INTO members_notification (user_id, member_id, type, message, is_read, created_at)
+SELECT account.id, member.id, seed.type, seed.message, seed.is_read,
+       CURRENT_TIMESTAMP - make_interval(days => seed.days_ago)
+FROM notification_seed AS seed
+JOIN members_member AS member ON member.phone_number = seed.phone_number
+CROSS JOIN (SELECT id FROM auth_user WHERE username = 'salim') AS account
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM members_notification AS existing
+    WHERE existing.user_id = account.id
+      AND existing.member_id = member.id
+      AND existing.type = seed.type
+      AND existing.message = seed.message
+);
+
+-- Representative activity for the Settings audit-history screen. Direct SQL
+-- does not invoke Django's audit service, so these rows are created here.
+WITH audit_seed(phone_number, action, target_type, target_name, metadata_summary, days_ago) AS (
+    VALUES
+        ('+919801000001', 'member_created', 'member', 'Arjun Nair', 'Member profile created', 12),
+        ('+919801000002', 'member_created', 'member', 'Rahul Das', 'Member profile created', 11),
+        ('+919801000003', 'member_created', 'member', 'Vishnu Kumar', 'Member profile created', 10),
+        ('+919801000004', 'member_updated', 'member', 'Aditya Menon', 'Updated: membership plan', 8),
+        ('+919801000005', 'payment_recorded', 'member', 'Sanjay Pillai', 'Payment recorded via Card', 7),
+        ('+919801000006', 'payment_recorded', 'member', 'Rohit Sharma', 'Payment recorded via UPI', 6),
+        ('+919801000007', 'attendance_marked', 'member', 'Kiran Varma', 'Attendance marked for today', 5),
+        ('+919801000008', 'attendance_marked', 'member', 'Ajay Krishnan', 'Attendance marked for today', 4),
+        ('+919801000009', 'payment_recorded', 'member', 'Deepak Mohan', 'Payment recorded via UPI', 3),
+        ('+919801000010', 'attendance_marked', 'member', 'Anil Joseph', 'Attendance marked for today', 2),
+        ('+919801000011', 'settings_updated', 'member', 'Nikhil Raj', 'Attendance link refreshed', 1),
+        ('+919801000012', 'member_created', 'member', 'Akhil S', 'Member profile created', 1)
+)
+INSERT INTO members_auditlog (
+    user_id, actor_id, actor_label, action, target_type, target_id,
+    target_name, metadata_summary, created_at
+)
+SELECT account.id, account.id, '', seed.action, seed.target_type, member.id,
+       seed.target_name, seed.metadata_summary,
+       CURRENT_TIMESTAMP - make_interval(days => seed.days_ago)
+FROM audit_seed AS seed
+JOIN members_member AS member ON member.phone_number = seed.phone_number
+CROSS JOIN (SELECT id FROM auth_user WHERE username = 'salim') AS account
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM members_auditlog AS existing
+    WHERE existing.user_id = account.id
+      AND existing.action = seed.action
+      AND existing.target_id = member.id
+      AND existing.metadata_summary = seed.metadata_summary
+);
+
 -- Keep the denormalized total in Member consistent with the inserted history.
 UPDATE members_member AS member
 SET total_cash_paid = totals.amount
@@ -233,13 +342,17 @@ WHERE totals.member_id = member.id
 
 COMMIT;
 
--- Expected first-run counts: user 1, plans 3, members 20, payments 48,
--- attendance 40.  This query is also a quick confirmation after pasting.
+-- Expected first-run counts: user 1, profile 1, plans 3, members 20,
+-- payments 48, attendance 40, notifications 6, and audit logs 12. This query
+-- is also a quick confirmation after pasting.
 SELECT 'auth_user (salim)' AS table_name, COUNT(*) AS rows
 FROM auth_user WHERE username = 'salim'
 UNION ALL
 SELECT 'members_membershipplan', COUNT(*)
 FROM members_membershipplan WHERE name IN ('Basic', 'Premium', 'VIP')
+UNION ALL
+SELECT 'members_gymuserprofile', COUNT(*)
+FROM members_gymuserprofile WHERE user_id = (SELECT id FROM auth_user WHERE username = 'salim')
 UNION ALL
 SELECT 'members_member', COUNT(*)
 FROM members_member WHERE user_id = (SELECT id FROM auth_user WHERE username = 'salim')
@@ -249,4 +362,10 @@ FROM members_recentpayment WHERE user_id = (SELECT id FROM auth_user WHERE usern
 UNION ALL
 SELECT 'members_attendance', COUNT(*)
 FROM members_attendance WHERE user_id = (SELECT id FROM auth_user WHERE username = 'salim')
+UNION ALL
+SELECT 'members_notification', COUNT(*)
+FROM members_notification WHERE user_id = (SELECT id FROM auth_user WHERE username = 'salim')
+UNION ALL
+SELECT 'members_auditlog', COUNT(*)
+FROM members_auditlog WHERE user_id = (SELECT id FROM auth_user WHERE username = 'salim')
 ORDER BY table_name;

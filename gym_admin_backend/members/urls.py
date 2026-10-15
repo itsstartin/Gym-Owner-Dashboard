@@ -1,5 +1,5 @@
 from django.urls import path
-from . views import get_audit_logs, add_notification, create_payment, current_user, delete_attendance, get_attendance, get_attendance_history, get_calc, get_graph, get_member, get_members, create_member, get_notifications, get_overdue_members, get_payment_history, get_payments, get_percent_stat_diff, get_plans, mark_attendance, mark_notification_read, member_access, member_access_get_attendance, member_access_mark_attendance, notify_overdue_member, send_attendance_mail_member, update_member, update_user_email
+from . views import get_audit_logs, add_notification, create_payment, current_user, delete_attendance, get_attendance, get_attendance_history, get_calc, get_graph, get_member, get_members, create_member, get_notifications, get_overdue_members, get_payment_history, get_payments, get_percent_stat_diff, get_plans, mark_attendance, mark_notification_read, member_access, member_access_get_attendance, member_access_mark_attendance, notify_overdue_member, regenerate_member_access_link, resend_member_access_link, revoke_member_access_link, send_attendance_mail_member, update_member, update_user_email
 
 urlpatterns = [
     path('get', get_members , name='get_member'),
@@ -21,6 +21,9 @@ urlpatterns = [
     path('member-access/<str:token>',member_access,name="member_access"),
     path('member-access/<str:token>/getattendance',member_access_get_attendance,name="member_access_get_attendance"),
     path('member-access/<str:token>/markattendance',member_access_mark_attendance,name="member_access_mark_attendance"),
+    path('member-access-links/<int:id>/regenerate', regenerate_member_access_link, name="regenerate_member_access_link"),
+    path('member-access-links/<int:id>/resend', resend_member_access_link, name="resend_member_access_link"),
+    path('member-access-links/<int:id>/revoke', revoke_member_access_link, name="revoke_member_access_link"),
     path('overdue/notify',notify_overdue_member,name="notify_overdue_members"),
     path('attendance-mail',send_attendance_mail_member,name="send_attendance_mail_member"),
     path('addnotification',add_notification,name="add_notification"),

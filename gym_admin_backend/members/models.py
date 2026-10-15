@@ -1,4 +1,6 @@
 import uuid
+from datetime import timedelta
+from django.conf import settings
 from django.db import models
 from django.core.validators import RegexValidator
 from django.contrib.auth.models import User
@@ -11,6 +13,13 @@ phone_regex = RegexValidator(
 PAYMENT_TYPE_CHOICES=[('card','Card'),('cash','Cash'),('upi','UPI')]
 # MEMBER_STATUS_CHOICES=[('active','Active'),('due','Due'),('expired','Expired')]
 # Create your models here.
+def default_member_access_link_expiry():
+    """Return the expiry for a newly-created self-service attendance link."""
+    return timezone.now() + getattr(
+        settings, "MEMBER_ACCESS_LINK_LIFETIME", timedelta(days=7)
+    )
+
+
 class GymUserProfile(models.Model):
     OWNER = 'owner'
     TRAINER = 'trainer'
@@ -81,7 +90,25 @@ class Member(models.Model):
     total_cash_paid=models.FloatField(default=0.0,blank=True)
     created_at=models.DateTimeField(auto_now_add=True)
     membership_start_date=models.DateField()
-    access_token = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
+    # This is a bearer credential, not an identifier to expose in member APIs.
+    # A NULL token represents an explicitly revoked link.
+    access_token = models.UUIDField(
+        default=uuid.uuid4, unique=True, editable=False, null=True, blank=True
+    )
+    access_token_expires_at = models.DateTimeField(
+        default=default_member_access_link_expiry, null=True, blank=True
+    )
+
+    def regenerate_access_link(self):
+        self.access_token = uuid.uuid4()
+        self.access_token_expires_at = default_member_access_link_expiry()
+        self.save(update_fields=["access_token", "access_token_expires_at"])
+        return self
+
+    def revoke_access_link(self):
+        self.access_token = None
+        self.access_token_expires_at = None
+        self.save(update_fields=["access_token", "access_token_expires_at"])
 
 
     def __str__(self) :

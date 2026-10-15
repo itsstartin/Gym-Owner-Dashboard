@@ -72,6 +72,19 @@ CORS_ALLOWED_ORIGINS = os.getenv(
     "http://localhost:5173"
 ).split(",")
 
+# A self-service attendance link is a short-lived bearer credential. Keep the
+# public-link knobs separate from staff JWT settings.
+MEMBER_ACCESS_LINK_LIFETIME = timedelta(
+    days=int(os.getenv("MEMBER_ACCESS_LINK_LIFETIME_DAYS", "7"))
+)
+PUBLIC_MEMBER_ACCESS_RATE_LIMIT = int(
+    os.getenv("PUBLIC_MEMBER_ACCESS_RATE_LIMIT", "30")
+)
+PUBLIC_MEMBER_ACCESS_RATE_WINDOW = int(
+    os.getenv("PUBLIC_MEMBER_ACCESS_RATE_WINDOW", "60")
+)
+PUBLIC_APP_URL = os.getenv("PUBLIC_APP_URL", CORS_ALLOWED_ORIGINS[0]).rstrip("/")
+
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',

@@ -2,6 +2,7 @@ from django.test import TestCase
 from django.db.models import Max
 from django.contrib.auth.models import User
 from django.utils import timezone
+from django.core.cache import cache
 from datetime import date, datetime, time, timedelta
 from rest_framework import status
 from rest_framework.test import APIRequestFactory, force_authenticate
@@ -31,7 +32,11 @@ from members.views import (
     get_percent_stat_diff,
     update_user_email,
     mark_attendance,
+    member_access,
+    member_access_get_attendance,
     member_access_mark_attendance,
+    regenerate_member_access_link,
+    revoke_member_access_link,
     notify_overdue_member,
     send_attendance_mail_member,
     update_member,
@@ -808,3 +813,90 @@ class AuditLogTests(TestCase):
         )
 
         self.assertEqual(entry.metadata_summary, "Sensitive detail omitted")
+
+
+class PublicAttendanceLinkTests(TestCase):
+    def setUp(self):
+        cache.clear()
+        self.owner = User.objects.create_user(username="link-owner", password="pass")
+        self.plan = MembershipPlan.objects.create(name="Link Plan", plan_price=300)
+        self.member = Member.objects.create(
+            user=self.owner,
+            name="Private Link Member",
+            phone_number="+910000006666",
+            email="private-link@example.com",
+            membership_plan=self.plan,
+            membership_start_date=date.today(),
+            access_token_expires_at=timezone.now() + timedelta(days=1),
+        )
+        self.factory = APIRequestFactory()
+
+    def tearDown(self):
+        cache.clear()
+
+    def owner_request(self, path):
+        request = self.factory.post(path, {}, format="json")
+        force_authenticate(request, user=self.owner)
+        return request
+
+    def test_valid_public_link_exposes_only_required_data_and_can_check_in(self):
+        token = str(self.member.access_token)
+
+        profile_response = member_access(
+            self.factory.get(f"/members/member-access/{token}"), token
+        )
+        state_response = member_access_get_attendance(
+            self.factory.get(f"/members/member-access/{token}/getattendance"), token
+        )
+        check_in_response = member_access_mark_attendance(
+            self.factory.post(f"/members/member-access/{token}/markattendance", {}, format="json"), token
+        )
+
+        self.assertEqual(profile_response.status_code, status.HTTP_200_OK)
+        self.assertEqual(profile_response.data, {"member_name": "Private Link Member"})
+        self.assertNotIn("phone_number", profile_response.data)
+        self.assertNotIn("member_id", profile_response.data)
+        self.assertEqual(state_response.data, {"attendance_marked": False})
+        self.assertEqual(check_in_response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(check_in_response.data, {"attendance_marked": True})
+
+    def test_expired_public_link_returns_the_same_safe_error_as_an_unknown_link(self):
+        self.member.access_token_expires_at = timezone.now() - timedelta(seconds=1)
+        self.member.save(update_fields=["access_token_expires_at"])
+        expired_token = str(self.member.access_token)
+
+        expired_response = member_access(
+            self.factory.get(f"/members/member-access/{expired_token}"), expired_token
+        )
+        invalid_response = member_access(
+            self.factory.get("/members/member-access/not-a-token"), "not-a-token"
+        )
+
+        self.assertEqual(expired_response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(expired_response.data, invalid_response.data)
+        self.assertEqual(expired_response.data, {"error": "This attendance link is invalid or has expired."})
+
+    def test_revoked_link_cannot_be_used_and_regeneration_invalidates_the_old_link(self):
+        old_token = str(self.member.access_token)
+        regenerated = regenerate_member_access_link(
+            self.owner_request(f"/members/member-access-links/{self.member.id}/regenerate"), self.member.id
+        )
+        self.member.refresh_from_db()
+        new_token = str(self.member.access_token)
+        old_link_response = member_access(
+            self.factory.get(f"/members/member-access/{old_token}"), old_token
+        )
+
+        revoke_response = revoke_member_access_link(
+            self.owner_request(f"/members/member-access-links/{self.member.id}/revoke"), self.member.id
+        )
+        revoked_response = member_access(
+            self.factory.get(f"/members/member-access/{new_token}"), new_token
+        )
+
+        self.assertEqual(regenerated.status_code, status.HTTP_200_OK)
+        self.assertNotEqual(old_token, new_token)
+        self.assertIn(new_token, regenerated.data["access_url"])
+        self.assertEqual(old_link_response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(revoke_response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(revoked_response.status_code, status.HTTP_404_NOT_FOUND)

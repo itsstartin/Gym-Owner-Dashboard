@@ -43,7 +43,7 @@ class MemberSerializer(serializers.ModelSerializer):
     health=serializers.SerializerMethodField()
     class Meta:
         model = Member
-        fields = '__all__'
+        exclude = ['access_token', 'access_token_expires_at']
         extra_kwargs = {
             'user': {'read_only': True}
         }

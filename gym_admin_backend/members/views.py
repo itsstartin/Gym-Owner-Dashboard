@@ -11,7 +11,13 @@ from django.utils import timezone
 from django.db.models import Exists, Max, OuterRef
 from members.services.calc_graph import calc_graph
 from members.services.percent_stat_diff import calc_percent_diff_data
-from members.services.member_access import send_mail_overdue_member, send_member_link
+from members.services.member_access import (
+    get_active_member_from_access_token,
+    member_access_link,
+    public_link_request_is_rate_limited,
+    send_mail_overdue_member,
+    send_member_link,
+)
 from members.services.notification_service import check_expired_members, check_inactive_members
 from members.services.audit_log import record_audit_log
 from members.permissions import MemberViewer, OwnerOnly, OwnerOrFrontDesk, get_user_role
@@ -309,55 +315,130 @@ def get_payment_history(request, id):
     serializer = RecentPaymentSerializer(payments, many=True)
     return Response(serializer.data)
 
-@api_view(['GET'])
-def member_access(request, token):
-    try:
-        member = Member.objects.get(access_token=token)
-    except Member.DoesNotExist:
-        return Response({"error": "Invalid link"}, status=404)
-    data = {
-        "member_name": member.name,
-        "member_id": member.id,
-        "member_phno":member.phone_number
-    }
-    return Response(data)
+PUBLIC_MEMBER_ACCESS_ERROR = "This attendance link is invalid or has expired."
 
-@api_view(['GET'])
-def member_access_get_attendance(request,token):
-    member = Member.objects.get(access_token=token)
-    attendance = Attendance.objects.filter(
-        member=member.id,
-        date__date=date.today()
-    )
-    serializer = AttendanceSerializer(attendance, many=True)
-    return Response(serializer.data)
 
-@api_view(['POST'])
-def member_access_mark_attendance(request,token):
-    member = Member.objects.get(access_token=token)
-    serializer = AttendanceSerializer(data={
-        "member":member.id,
-        "date":request.data["date"]
-    })
-    if serializer.is_valid():
-        member = serializer.validated_data['member']
-        if Attendance.objects.filter(user=member.user,member=member,date__date=date.today()).exists():
-            return Response({"msg":"Attendance already marked"},status=status.HTTP_400_BAD_REQUEST)
-        attendance = serializer.save(user=member.user)
-        record_audit_log(
-            user=member.user,
-            actor=None,
-            actor_label=f"Member: {member.name}",
-            action=AuditLog.ATTENDANCE_MARKED,
-            target_type="member",
-            target_id=member.id,
-            target_name=member.name,
-            metadata_summary=f"Self-service attendance marked for {attendance.date.date().isoformat()}",
+def _public_member_access_member(request, token):
+    if public_link_request_is_rate_limited(request, token):
+        return None, Response(
+            {"error": "Too many requests. Please try again later."},
+            status=status.HTTP_429_TOO_MANY_REQUESTS,
         )
-        return Response(serializer.data,status=status.HTTP_201_CREATED)
-    return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
 
-@api_view(['POST'])
+    member = get_active_member_from_access_token(token)
+    if member is None:
+        # Expiry, revocation, malformed tokens, and unknown tokens deliberately
+        # receive the same response so this endpoint cannot be used to enumerate links.
+        return None, Response(
+            {"error": PUBLIC_MEMBER_ACCESS_ERROR}, status=status.HTTP_404_NOT_FOUND
+        )
+    return member, None
+
+
+def _member_access_link_payload(member):
+    return {
+        "member_id": member.id,
+        "access_url": member_access_link(member),
+        "expires_at": member.access_token_expires_at,
+    }
+
+
+def _regenerate_member_access_link(member, actor):
+    member.regenerate_access_link()
+    record_audit_log(
+        user=member.user,
+        actor=actor,
+        action=AuditLog.SETTINGS_UPDATED,
+        target_type="member",
+        target_id=member.id,
+        target_name=member.name,
+        metadata_summary="Attendance link refreshed",
+    )
+    return member
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated, OwnerOnly])
+def regenerate_member_access_link(request, id):
+    member = get_object_or_404(Member, id=id, user=request.user)
+    member = _regenerate_member_access_link(member, request.user)
+    return Response(_member_access_link_payload(member), status=status.HTTP_200_OK)
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated, OwnerOnly])
+def resend_member_access_link(request, id):
+    member = get_object_or_404(Member, id=id, user=request.user)
+    member = _regenerate_member_access_link(member, request.user)
+    send_member_link(member)
+    return Response(
+        {"msg": "A new attendance link was emailed.", **_member_access_link_payload(member)},
+        status=status.HTTP_200_OK,
+    )
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated, OwnerOnly])
+def revoke_member_access_link(request, id):
+    member = get_object_or_404(Member, id=id, user=request.user)
+    member.revoke_access_link()
+    record_audit_log(
+        user=member.user,
+        actor=request.user,
+        action=AuditLog.SETTINGS_UPDATED,
+        target_type="member",
+        target_id=member.id,
+        target_name=member.name,
+        metadata_summary="Attendance link disabled",
+    )
+    return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+@api_view(["GET"])
+def member_access(request, token):
+    member, error = _public_member_access_member(request, token)
+    if error is not None:
+        return error
+    # Only a display name is needed by the public check-in screen.
+    return Response({"member_name": member.name})
+
+
+@api_view(["GET"])
+def member_access_get_attendance(request, token):
+    member, error = _public_member_access_member(request, token)
+    if error is not None:
+        return error
+    return Response({
+        "attendance_marked": Attendance.objects.filter(
+            member=member, date__date=date.today()
+        ).exists()
+    })
+
+
+@api_view(["POST"])
+def member_access_mark_attendance(request, token):
+    member, error = _public_member_access_member(request, token)
+    if error is not None:
+        return error
+    if Attendance.objects.filter(user=member.user, member=member, date__date=date.today()).exists():
+        return Response({"msg": "Attendance already marked"}, status=status.HTTP_400_BAD_REQUEST)
+
+    # Do not accept a client-supplied timestamp for a public check-in.
+    attendance = Attendance.objects.create(user=member.user, member=member)
+    record_audit_log(
+        user=member.user,
+        actor=None,
+        actor_label=f"Member: {member.name}",
+        action=AuditLog.ATTENDANCE_MARKED,
+        target_type="member",
+        target_id=member.id,
+        target_name=member.name,
+        metadata_summary=f"Self-service attendance marked for {attendance.date.date().isoformat()}",
+    )
+    return Response({"attendance_marked": True}, status=status.HTTP_201_CREATED)
+
+
+@api_view(["POST"])
 @permission_classes([IsAuthenticated, OwnerOrFrontDesk])
 def notify_overdue_member(request):
     data=request.data
@@ -369,20 +450,27 @@ def notify_overdue_member(request):
     thread.start()
     return Response({"msg":"Notified the Overdue Member"},status=status.HTTP_200_OK)
 
-@api_view(['POST'])
-@permission_classes([IsAuthenticated, OwnerOrFrontDesk])
+@api_view(["POST"])
+@permission_classes([IsAuthenticated, OwnerOnly])
 def send_attendance_mail_member(request):
-    data=request.data
-    if data["member_id"]=='all':
-        members=Member.objects.filter(user=request.user)
-        for member in members:
-            send_member_link(member)
-        return Response({"msg":"Attendance Link Successfully Sented for All Members"},status=status.HTTP_200_OK)
-    member=get_object_or_404(Member, id=data["member_id"], user=request.user)
-    send_member_link(member)
-    return Response({"msg":f"Attendance Link Successfully Sented for {member.name}"},status=status.HTTP_200_OK)
+    member_id = request.data.get("member_id")
+    if not member_id:
+        return Response({"error": "member_id is required"}, status=status.HTTP_400_BAD_REQUEST)
 
-@api_view(['GET'])
+    if member_id == "all":
+        members = Member.objects.filter(user=request.user)
+        for member in members:
+            _regenerate_member_access_link(member, request.user)
+            send_member_link(member)
+        return Response({"msg": "New attendance links were emailed to all members."})
+
+    member = get_object_or_404(Member, id=member_id, user=request.user)
+    _regenerate_member_access_link(member, request.user)
+    send_member_link(member)
+    return Response({"msg": f"A new attendance link was emailed to {member.name}."})
+
+
+@api_view(["GET"])
 @permission_classes([IsAuthenticated, OwnerOnly])
 def add_notification(request):
     members = list(

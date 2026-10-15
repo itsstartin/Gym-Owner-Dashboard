@@ -1,15 +1,52 @@
-from django.conf import settings
 from django.core.mail import send_mail
 from dotenv import load_dotenv
 import requests
 import os
+import hashlib
+import uuid
+from django.conf import settings
+from django.core.cache import cache
+from django.utils import timezone
 from members.models import Member
 
 load_dotenv()
 
+def get_active_member_from_access_token(token):
+    """Return a member only when its public bearer link is still usable."""
+    try:
+        token = uuid.UUID(str(token))
+    except (TypeError, ValueError, AttributeError):
+        return None
+    return Member.objects.filter(
+        access_token=token, access_token_expires_at__gt=timezone.now()
+    ).first()
+
+
+def public_link_request_is_rate_limited(request, token):
+    """Apply a lightweight per-IP, per-link limit to public endpoints.
+
+    Django's cache backend makes this work with the current stack; deployments
+    using a shared cache get the limit across workers as well.
+    """
+    limit = max(getattr(settings, "PUBLIC_MEMBER_ACCESS_RATE_LIMIT", 30), 1)
+    window = max(getattr(settings, "PUBLIC_MEMBER_ACCESS_RATE_WINDOW", 60), 1)
+    ip_address = request.META.get("REMOTE_ADDR", "unknown")
+    digest = hashlib.sha256(f"{ip_address}:{token}".encode()).hexdigest()
+    key = f"public-member-link:{digest}"
+
+    if cache.add(key, 1, timeout=window):
+        return False
+    return cache.incr(key) > limit
+
+
+def member_access_link(member):
+    if not member.access_token or not member.access_token_expires_at:
+        raise ValueError("Cannot create a URL for a revoked attendance link.")
+    return f"{settings.PUBLIC_APP_URL}/memberaccess/{member.access_token}"
+
+
 def send_member_link(member):
-    link_header=os.getenv("CORS_ALLOWED_ORIGINS")
-    link = f"{link_header}/memberaccess/{member.access_token}"
+    link = member_access_link(member)
     url = "https://api.brevo.com/v3/smtp/email"
     headers = {
         "accept":"application/json",

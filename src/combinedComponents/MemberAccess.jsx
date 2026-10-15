@@ -8,20 +8,21 @@ function MemberAccess() {
     const {token} = useParams()
     const [enabled, setEnabled] = useState(false);
     const [memberDetails,setMemberDetails] = useState()
+    const [error, setError] = useState('')
     const markAttendance = () => {
         const today = new Date().toISOString();
-        axios.post(`members/member-access/${token}/markattendance`,{
-            date:today
-        })
-        setEnabled(true)
+        axios.post(`members/member-access/${token}/markattendance`, { date: today })
+            .then(() => setEnabled(true))
+            .catch((requestError) => setError(requestError.response?.data?.error || 'Could not mark attendance.'))
     }
     useEffect(()=>{
-        axios.get(`members/member-access/${token}`).then((res)=>{
+        axios.get(`members/member-access/${token}`).then((res) => {
             setMemberDetails(res.data)
-        })
-        axios.get(`members/member-access/${token}/getattendance`).then((res)=>{
-            setEnabled(res.data.length > 0)
-        })
+            setError('')
+        }).catch((requestError) => setError(requestError.response?.data?.error || 'This attendance link is unavailable.'))
+        axios.get(`members/member-access/${token}/getattendance`).then((res) => {
+            setEnabled(res.data.attendance_marked)
+        }).catch((requestError) => setError(requestError.response?.data?.error || 'This attendance link is unavailable.'))
     },[token])
     return (
         <div className='fixed
@@ -44,12 +45,9 @@ function MemberAccess() {
                     <h1 className='font-extrabold'>Name:</h1>
                     <h1>{memberDetails.member_name}</h1>
                 </div>
-                <div className="flex gap-10">
-                    <h1 className='font-extrabold'>Ph no:</h1>
-                    <h1>{memberDetails.member_phno}</h1>
-                </div>
             </div>
             :""}
+            {error && <p role="alert" className="text-red-300">{error}</p>}
             <IconDescBtn icon={enabled ? Check : Plus}  label={enabled?'Attendance Marked for today':'Mark Attendance'}
             onClick={()=>enabled?'':markAttendance()}
             />

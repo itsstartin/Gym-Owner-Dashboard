@@ -1,27 +1,29 @@
-version: '3.8'
-
 services:
   db:
     image: postgres:15-alpine
     restart: always
     environment:
-      - POSTGRES_DB=gym_db
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=13274  # Use a simple password for local Docker dev
+      POSTGRES_DB: gym_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in your environment}
     ports:
       - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data/
 
   backend:
-    build: ./gym_admin_backend   # Tells Docker where to find your new Dockerfile
+    build: ./gym_admin_backend
     ports:
       - "8000:8000"
     volumes:
-      - ./gym_admin_backend:/app # Syncs your laptop files to the container instantly
+      - ./gym_admin_backend:/app
     environment:
-      # This leverages the dj-database-url package you installed earlier!
-      - DATABASE_URL=postgres://postgres:13274@db:5432/gym_db
+      DATABASE_URL: postgres://postgres:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in your environment}@db:5432/gym_db
+      SECRET_KEY: ${SECRET_KEY:?Set SECRET_KEY in your environment}
+      DEBUG: ${DEBUG:-False}
+      ALLOWED_HOSTS: ${ALLOWED_HOSTS:-localhost,127.0.0.1}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:5173}
+      PUBLIC_APP_URL: ${PUBLIC_APP_URL:-http://localhost:5173}
     depends_on:
       - db
 

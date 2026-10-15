@@ -1,9 +1,9 @@
 import React from 'react'
 import NotificationList from '../components/NotificationList'
 
-function NotificationMenuContent() {
+function NotificationMenuContent({ isActive, dataVersion }) {
   return (
-    <NotificationList/>
+    <NotificationList isActive={isActive} dataVersion={dataVersion}/>
   )
 }
 

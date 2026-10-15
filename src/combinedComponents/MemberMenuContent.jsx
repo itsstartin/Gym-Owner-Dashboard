@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import WelcomeHeader from '../components/WelcomeHeader'
 import MemberCard from '../components/MemberCard'
 import MemberSearchBar from '../components/MemberSearchBar'
@@ -19,7 +19,7 @@ const defaultFilters = {
   expiry: '',
 }
 
-function MemberMenuContent() {
+function MemberMenuContent({ isActive, dataVersion }) {
   const [filterValue, setFilterValue] = useState({
     ...defaultFilters,
   })
@@ -30,6 +30,7 @@ function MemberMenuContent() {
   const [members, setMembers]=useState([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
+  const loadedDataVersion = useRef(dataVersion)
 
   const refreshMembers = useCallback(async ()=>{
     setIsLoading(true)
@@ -58,6 +59,12 @@ function MemberMenuContent() {
       dispatch(markAttendanceOff())
     }
   },[dispatch, refreshMembers])
+
+  useEffect(() => {
+    if (!isActive || loadedDataVersion.current === dataVersion) return
+    loadedDataVersion.current = dataVersion
+    refreshMembers()
+  }, [dataVersion, isActive, refreshMembers])
 
   useEffect(()=>{
     setFilterValue({ ...defaultFilters, ...memberFilters })

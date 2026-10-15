@@ -1,17 +1,26 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import WelcomeHeader from '../components/WelcomeHeader'
 import SettingsPersonalDetailsCard from '../components/SettingsPersonalDetailsCard'
 import axios from '../axios'
 import SettingsMemberSection from '../components/SettingsMemberSection'
 
-function SettingsMenuContent() {
+function SettingsMenuContent({ isActive, dataVersion }) {
   const [currentSettingsPage,setCurrentSettingsPage] = useState('Profile')
   const [userDetails,setUserDetails]=useState({})
+  const loadedDataVersion = useRef(dataVersion)
   useEffect(()=>{
     axios.get('members/user').then((res)=>{
       setUserDetails(res.data)
     })
   },[currentSettingsPage])
+
+  useEffect(() => {
+    if (!isActive || loadedDataVersion.current === dataVersion) return
+    loadedDataVersion.current = dataVersion
+    axios.get('members/user').then((res) => {
+      setUserDetails(res.data)
+    })
+  }, [dataVersion, isActive])
   return (
     <div className='
     flex

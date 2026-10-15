@@ -46,6 +46,23 @@ def current_user(request):
     }
     return Response(data)
 
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated, OwnerOnly])
+def get_dashboard(request):
+    """Return the dashboard payload in one request instead of four."""
+    user = request.user
+    return Response({
+        "calculation": calc_data(user),
+        "graphs": calc_graph(user),
+        "percent_diff": calc_percent_diff_data(user),
+        "user": {
+            "username": user.username,
+            "email": user.email,
+            "role": get_user_role(user),
+        },
+    })
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated, MemberViewer])
 def get_members(request):

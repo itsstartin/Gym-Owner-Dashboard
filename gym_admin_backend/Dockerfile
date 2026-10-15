@@ -47,6 +47,6 @@ COPY . .
 # Expose the port that the application listens on.
 EXPOSE 8000
 
-# Run the application.
-#CMD gunicorn 'gym_admin_backend.wsgi' --bind=0.0.0.0:8000
-CMD python manage.py runserver 0.0.0.0:8000
+# Run the production WSGI server. `runserver` is single-process development
+# tooling and makes concurrent browser requests queue after deployment.
+CMD ["sh", "-c", "gunicorn gym_admin_backend.wsgi:application --bind 0.0.0.0:${PORT:-8000} --workers ${WEB_CONCURRENCY:-2} --threads ${GUNICORN_THREADS:-4} --timeout 60"]

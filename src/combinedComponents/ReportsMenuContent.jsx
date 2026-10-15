@@ -1,4 +1,4 @@
-import React, { lazy, Suspense, useCallback, useEffect, useState } from 'react'
+import React, { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react'
 import StatsCard from '../components/StatsCard'
 import WelcomeHeader from '../components/WelcomeHeader'
 import { DollarSign, Users } from 'lucide-react'
@@ -7,11 +7,12 @@ import { ErrorState, LoadingState } from '../components/AsyncState'
 
 const ReportGraphs = lazy(() => import('../components/ReportGraphs'))
 
-function ReportsMenuContent() {
+function ReportsMenuContent({ isActive, dataVersion }) {
     const [calcData,setCalcData]=useState({})
     const [graphData, setGraphData] = useState({})
     const [isLoading, setIsLoading] = useState(true)
     const [error, setError] = useState('')
+    const loadedDataVersion = useRef(dataVersion)
 
     const loadReports = useCallback(async () => {
         setIsLoading(true)
@@ -33,6 +34,12 @@ function ReportsMenuContent() {
     useEffect(()=>{
         loadReports()
     },[loadReports])
+
+    useEffect(() => {
+        if (!isActive || loadedDataVersion.current === dataVersion) return
+        loadedDataVersion.current = dataVersion
+        loadReports()
+    }, [dataVersion, isActive, loadReports])
 
     return (
       <div className='

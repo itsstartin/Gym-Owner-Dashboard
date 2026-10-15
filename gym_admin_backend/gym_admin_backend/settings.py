@@ -120,6 +120,12 @@ DATABASE_URL = os.getenv("DATABASE_URL")
 if DATABASE_URL:
     DATABASES['default'] = dj_database_url.config(default=DATABASE_URL)
 
+# Reusing a healthy PostgreSQL connection avoids a fresh TLS/database
+# handshake for every request. This is especially important when the API and
+# Neon database are deployed in different services or regions.
+DATABASES['default']['CONN_MAX_AGE'] = int(os.getenv('DB_CONN_MAX_AGE', '600'))
+DATABASES['default']['CONN_HEALTH_CHECKS'] = True
+
 
 # Password validation
 # https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators

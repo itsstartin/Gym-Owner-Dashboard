@@ -1,5 +1,5 @@
 import { CircleAlert, CircleCheckBig, CircleDollarSign, Clock4, Plus } from 'lucide-react'
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { useDispatch } from 'react-redux'
 import WelcomeHeader from '../components/WelcomeHeader'
 import IconDescBtn from '../components/IconDescBtn'
@@ -10,13 +10,14 @@ import PaymentCard from '../components/PaymentCard'
 import OverdueCard from '../components/OverdueCard'
 import { EmptyState, ErrorState, LoadingState } from '../components/AsyncState'
 
-function PaymentsMenuContent() {
+function PaymentsMenuContent({ isActive, dataVersion }) {
     const [recentPayments,setRecentPayments]=useState([])
     const [calcData,setCalcData]=useState({})
     const [overdueMembers,setOverdueMembers]=useState([])
     const [percentDiffData,setPercentDiffData]=useState({})
     const [isLoading, setIsLoading] = useState(true)
     const [error, setError] = useState('')
+    const loadedDataVersion = useRef(dataVersion)
     const dispatch = useDispatch()
 
     const loadPayments = useCallback(async () => {
@@ -43,6 +44,12 @@ function PaymentsMenuContent() {
     useEffect(()=>{
         loadPayments()
     },[loadPayments])
+
+    useEffect(() => {
+        if (!isActive || loadedDataVersion.current === dataVersion) return
+        loadedDataVersion.current = dataVersion
+        loadPayments()
+    }, [dataVersion, isActive, loadPayments])
 
     return (
       <div className='

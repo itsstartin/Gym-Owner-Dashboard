@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import WelcomeHeader from '../components/WelcomeHeader'
 import { EmptyState, ErrorState, LoadingState } from '../components/AsyncState'
 import axios from '../axios'
@@ -13,12 +13,13 @@ const actionOptions = [
   { value: 'settings_updated', label: 'Settings updated' },
 ]
 
-function AuditLogContent() {
+function AuditLogContent({ isActive, dataVersion }) {
   const [filters, setFilters] = useState({ action: '', date: '' })
   const [logs, setLogs] = useState([])
   const [pagination, setPagination] = useState({ page: 1, total_pages: 0, total: 0 })
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
+  const loadedDataVersion = useRef(dataVersion)
 
   const loadLogs = useCallback(async (page = 1) => {
     setIsLoading(true)
@@ -37,6 +38,12 @@ function AuditLogContent() {
   useEffect(() => {
     loadLogs()
   }, [loadLogs])
+
+  useEffect(() => {
+    if (!isActive || loadedDataVersion.current === dataVersion) return
+    loadedDataVersion.current = dataVersion
+    loadLogs()
+  }, [dataVersion, isActive, loadLogs])
 
   const updateFilter = (event) => {
     const { name, value } = event.target

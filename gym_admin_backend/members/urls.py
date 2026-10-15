@@ -1,5 +1,5 @@
 from django.urls import path
-from . views import get_audit_logs, add_notification, create_payment, current_user, delete_attendance, get_attendance, get_attendance_history, get_calc, get_graph, get_member, get_members, create_member, get_notifications, get_overdue_members, get_payment_history, get_payments, get_percent_stat_diff, get_plans, mark_attendance, mark_notification_read, member_access, member_access_get_attendance, member_access_mark_attendance, notify_overdue_member, regenerate_member_access_link, resend_member_access_link, revoke_member_access_link, send_attendance_mail_member, update_member, update_user_email
+from . views import get_audit_logs, add_notification, create_payment, current_user, delete_attendance, get_attendance, get_attendance_history, get_calc, get_dashboard, get_graph, get_member, get_members, create_member, get_notifications, get_overdue_members, get_payment_history, get_payments, get_percent_stat_diff, get_plans, mark_attendance, mark_notification_read, member_access, member_access_get_attendance, member_access_mark_attendance, notify_overdue_member, regenerate_member_access_link, resend_member_access_link, revoke_member_access_link, send_attendance_mail_member, update_member, update_user_email
 
 urlpatterns = [
     path('get', get_members , name='get_member'),
@@ -15,6 +15,7 @@ urlpatterns = [
     path('getpaymenthistory/<int:id>', get_payment_history, name='get_payment_history'),
     path('deleteattendance/<int:id>',delete_attendance,name='delete_attendance'),
     path('getcalc',get_calc,name="get_calculation"),
+    path('dashboard', get_dashboard, name='get_dashboard'),
     path('getgraph',get_graph,name="get_graph"),
     path('user',current_user,name="current_user"),
     path('overdue',get_overdue_members,name="get_overdue_members"),

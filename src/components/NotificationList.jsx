@@ -1,14 +1,15 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Bell, Search } from "lucide-react";
 import axios from '../axios'
 import NotificationCard from "./NotificationCard";
 import { EmptyState, ErrorState, LoadingState } from './AsyncState'
 
-export default function NotificationList() {
+export default function NotificationList({ isActive, dataVersion }) {
   const [notifications, setNotifications] = useState([]);
   const [search, setSearch] = useState("");
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
+  const loadedDataVersion = useRef(dataVersion)
 
   const loadNotifications = useCallback(async () => {
     setIsLoading(true)
@@ -26,6 +27,12 @@ export default function NotificationList() {
   useEffect(()=>{
     loadNotifications()
   },[loadNotifications])
+
+  useEffect(() => {
+    if (!isActive || loadedDataVersion.current === dataVersion) return
+    loadedDataVersion.current = dataVersion
+    loadNotifications()
+  }, [dataVersion, isActive, loadNotifications])
 
   const filtered = notifications.filter((obj) =>
     obj.message.toLowerCase().includes(search.toLowerCase())

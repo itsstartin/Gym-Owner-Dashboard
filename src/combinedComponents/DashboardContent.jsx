@@ -1,4 +1,4 @@
-import React, { lazy, Suspense, useCallback, useEffect, useState } from 'react'
+import React, { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react'
 import WelcomeHeader from '../components/WelcomeHeader'
 import IconDescBtn from '../components/IconDescBtn'
 import StatsCard from '../components/StatsCard'
@@ -10,7 +10,7 @@ import { ErrorState, LoadingState } from '../components/AsyncState'
 
 const GraphCard = lazy(() => import('../components/GraphCard'))
 
-function DashboardContent() {
+function DashboardContent({ isActive, dataVersion }) {
     const dispatch = useDispatch()
     const [calcData,setCalcData]=useState({})
     const [graphData,setGraphData]=useState({})
@@ -18,6 +18,7 @@ function DashboardContent() {
     const [userDetails,setUserDetails]=useState({})
     const [isLoading, setIsLoading] = useState(true)
     const [error, setError] = useState('')
+    const loadedDataVersion = useRef(dataVersion)
     const retention = calcData.retention || {
         at_risk_count: 0,
         inactive_count: 0,
@@ -33,16 +34,11 @@ function DashboardContent() {
         setIsLoading(true)
         setError('')
         try {
-            const [calc, graph, percentDiff, user] = await Promise.all([
-                axios.get('members/getcalc'),
-                axios.get('members/getgraph'),
-                axios.get('members/getpercentstatdiff'),
-                axios.get('members/user'),
-            ])
-            setCalcData(calc.data)
-            setGraphData(graph.data)
-            setPercentDiffData(percentDiff.data)
-            setUserDetails(user.data)
+            const response = await axios.get('members/dashboard')
+            setCalcData(response.data.calculation)
+            setGraphData(response.data.graphs)
+            setPercentDiffData(response.data.percent_diff)
+            setUserDetails(response.data.user)
             axios.get('members/addnotification').catch(() => {})
         } catch {
             setError('Unable to load the dashboard. Please try again.')
@@ -54,6 +50,12 @@ function DashboardContent() {
     useEffect(()=>{
         loadDashboard()
     },[loadDashboard])
+
+    useEffect(() => {
+        if (!isActive || loadedDataVersion.current === dataVersion) return
+        loadedDataVersion.current = dataVersion
+        loadDashboard()
+    }, [dataVersion, isActive, loadDashboard])
 
   return (
     <div className='

@@ -31,8 +31,8 @@ flowchart LR
 
 | Area | Placeholder |
 | --- | --- |
-| Dashboard | ![Dashboard](screenshots/dashboard1.png) |
-| Members and attendance | ![Members](screenshots/members1.png) |
+| Dashboard | ![Dashboard](screenshots/dashboard1.png) ![Dashboard](screenshots/dashboard2.png) ![Dashboard](screenshots/dashboard3.png) |
+| Members and attendance | ![Members](screenshots/member1.png) ![Members](screenshots/member2.png) |
 | Settings: attendance links | ![Settings](screenshots/settings.png) |
 
 ## Tech stack

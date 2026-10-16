@@ -31,9 +31,9 @@ flowchart LR
 
 | Area | Placeholder |
 | --- | --- |
-| Dashboard | _Add a dashboard screenshot here_ |
-| Members and attendance | _Add a member-management screenshot here_ |
-| Settings: attendance links | _Add an owner link-controls screenshot here_ |
+| Dashboard | ![Dashboard](screenshots/dashboard1.png) |
+| Members and attendance | ![Members](screenshots/members1.png) |
+| Settings: attendance links | ![Settings](screenshots/settings.png) |
 
 ## Tech stack
 
